@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# VS Code
+.vscode/
+
+# API Keys
+config/*_key.txt
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+logs/

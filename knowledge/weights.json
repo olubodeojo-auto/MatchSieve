@@ -1,0 +1,44 @@
+{
+    "goal_probability": {
+        "home_form": 15,
+        "away_form": 15,
+        "head_to_head": 10,
+        "goal_average": 20,
+        "league_average": 10,
+        "shots_on_target": 10,
+        "dangerous_attacks": 10,
+        "xg": 10
+    },
+
+    "under_engine": {
+        "clean_sheets": 20,
+        "under_trend": 25,
+        "goal_average": 15,
+        "defensive_strength": 15,
+        "league_under_rate": 15,
+        "market_stability": 10
+    },
+
+    "btts_engine": {
+        "btts_rate": 30,
+        "goal_average": 20,
+        "clean_sheets": 20,
+        "attack_strength": 15,
+        "defence_strength": 15
+    },
+
+    "nbs_engine": {
+        "market_stability": 20,
+        "data_quality": 20,
+        "provider_agreement": 20,
+        "league_volatility": 20,
+        "risk": 20
+    },
+
+    "confidence_engine": {
+        "feature_quality": 25,
+        "provider_quality": 25,
+        "data_completeness": 25,
+        "model_agreement": 25
+    }
+}

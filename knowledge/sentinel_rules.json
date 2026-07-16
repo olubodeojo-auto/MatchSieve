@@ -1,0 +1,35 @@
+{
+    "recommendations": {
+
+        "ENTER": {
+            "minimum_confidence": 90,
+            "market_stability": "STABLE",
+            "allow_conflicts": false
+        },
+
+        "OVER_LEAN": {
+            "minimum_confidence": 80,
+            "market_stability": "STABLE"
+        },
+
+        "UNDER_LEAN": {
+            "minimum_confidence": 80,
+            "market_stability": "STABLE"
+        },
+
+        "UNDER_LEAN_STRONG": {
+            "minimum_confidence": 90,
+            "market_stability": "STABLE",
+            "goal_probability_max": 35
+        },
+
+        "WAIT": {
+            "allow_conflicts": true,
+            "volatile_market": true
+        },
+
+        "AVOID": {
+            "minimum_confidence": 0
+        }
+    }
+}

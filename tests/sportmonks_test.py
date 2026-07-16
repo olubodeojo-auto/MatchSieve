@@ -1,0 +1,1 @@
+print(api.head_to_head(2447, 2394))

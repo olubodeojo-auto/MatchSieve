@@ -2,6 +2,7 @@ import unittest
 
 from engines.btts_engine import BTTSEngine
 from engines.confidence_engine import ConfidenceEngine
+from engines.evidence_engine import EvidenceEngine
 from engines.form_engine import FormEngine
 from engines.goal_probability_engine import GoalProbabilityEngine
 from engines.under_engine import UnderEngine
@@ -57,6 +58,17 @@ class LegacyFeatureAuditTests(unittest.TestCase):
         result = ConfidenceEngine().calculate(AnalysisContext(features=features))
         self.assertEqual(result["score"], 0)
         self.assertEqual(result["reasons"], [])
+
+    def test_missing_form_is_unknown_and_not_counted_as_evidence(self):
+        features = FootballFeatures()
+        context = AnalysisContext(features=features)
+        form = FormEngine().calculate(context)
+        self.assertEqual(form["rating"], "UNKNOWN")
+        self.assertFalse(form["evidence_available"])
+        context.results["Form Engine"] = form
+        evidence = EvidenceEngine().calculate(context)
+        self.assertNotIn("UNKNOWN", evidence["evidence"])
+        self.assertEqual(evidence["confidence"], 0)
 
     def test_empty_metrics_do_not_create_goal_probability(self):
         features = FootballFeatures()

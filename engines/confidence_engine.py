@@ -10,7 +10,9 @@ class ConfidenceEngine(BaseEngine):
 
         features = context.features
 
-        score = 50
+        # Confidence is a completeness score, not a prior belief. Start at
+        # zero and award points only for evidence actually present.
+        score = 0
         reasons = []
 
         if features.home_team:

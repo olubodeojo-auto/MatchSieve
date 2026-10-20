@@ -10,13 +10,20 @@ env/
 # VS Code
 .vscode/
 
-# API Keys
+# API keys and local environment
 config/*_key.txt
-
-# Environment files
 .env
 .env.*
+!.env.example
 
-# Logs
+# Local databases, archives and logs
+*.db
+*.sqlite
+*.sqlite3
 *.log
 logs/
+data/archive/*
+!data/archive/.gitkeep
+
+# Supabase local state
+supabase/.temp/

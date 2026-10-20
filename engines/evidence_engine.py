@@ -121,7 +121,7 @@ class EvidenceEngine(BaseEngine):
         confidence += len(evidence) * 5
         confidence -= len(contradictions) * 8
 
-        confidence = max(5, min(100, confidence))
+        confidence = max(0, min(100, confidence))
 
         return {
 

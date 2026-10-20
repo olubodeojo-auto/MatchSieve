@@ -20,37 +20,20 @@ from engines.final_decision_engine import FinalDecisionEngine
 class MasterEngine:
 
     def __init__(self):
-
-        # -----------------------------
-        # Core Analysis
-        # -----------------------------
-
         self.form = FormEngine()
         self.goal = GoalProbabilityEngine()
         self.under = UnderEngine()
         self.btts = BTTSEngine()
-
-        # -----------------------------
-        # Football Intelligence
-        # -----------------------------
 
         self.attack = AttackStrengthEngine()
         self.defence = DefenceStrengthEngine()
         self.league = LeagueProfileEngine()
         self.momentum = MomentumEngine()
 
-        # -----------------------------
-        # Advanced Intelligence
-        # -----------------------------
-
         self.explosion = ExplosionEngine()
         self.trap = TrapEngine()
         self.value = ValueEngine()
         self.lazarus = LazarusEngine()
-
-        # -----------------------------
-        # Decision Layer
-        # -----------------------------
 
         self.evidence = EvidenceEngine()
         self.confidence = ConfidenceEngine()
@@ -59,150 +42,38 @@ class MasterEngine:
         self.final = FinalDecisionEngine()
 
     def analyze(self, context):
+        # Run foundational profiles first.
+        self._run(context, "Form Engine", self.form)
+        self._run(context, "League Profile Engine", self.league)
+        self._run(context, "Attack Strength Engine", self.attack)
+        self._run(context, "Defence Strength Engine", self.defence)
+        self._run(context, "Momentum Engine", self.momentum)
 
-        # ----------------------------------
-        # Form Engine
-        # ----------------------------------
-
-        form = self.form.calculate(context)
-
-        context.results["Form Engine"] = form
-
-        # ----------------------------------
-        # Goal Probability Engine
-        # ----------------------------------
-
-        goal = self.goal.calculate(context)
-
-        context.results["Goal Probability Engine"] = goal
-
+        # These engines use the foundational feature values above.
+        goal = self._run(context, "Goal Probability Engine", self.goal)
         context.features.goal_probability = goal.get("score", 0)
+        self._run(context, "Under Engine", self.under)
+        self._run(context, "BTTS Engine", self.btts)
+        self._run(context, "Explosion Engine", self.explosion)
+        self._run(context, "Lazarus Engine", self.lazarus)
 
-        # ----------------------------------
-        # Under Engine
-        # ----------------------------------
+        # Resolve data risk before engines that depend on it.
+        self._run(context, "NBS Engine", self.nbs)
+        self._run(context, "Trap Engine", self.trap)
+        self._run(context, "Value Engine", self.value)
+        self._run(context, "Evidence Engine", self.evidence)
 
-        under = self.under.calculate(context)
-
-        context.results["Under Engine"] = under
-
-        # ----------------------------------
-        # BTTS Engine
-        # ----------------------------------
-
-        btts = self.btts.calculate(context)
-
-        context.results["BTTS Engine"] = btts
-
-        # ----------------------------------
-        # Attack Strength Engine
-        # ----------------------------------
-
-        attack = self.attack.calculate(context)
-
-        context.results["Attack Strength Engine"] = attack
-
-        # ----------------------------------
-        # Defence Strength Engine
-        # ----------------------------------
-
-        defence = self.defence.calculate(context)
-
-        context.results["Defence Strength Engine"] = defence
-
-        # ----------------------------------
-        # League Profile Engine
-        # ----------------------------------
-
-        league = self.league.calculate(context)
-
-        context.results["League Profile Engine"] = league
-
-        # ----------------------------------
-        # Momentum Engine
-        # ----------------------------------
-
-        momentum = self.momentum.calculate(context)
-
-        context.results["Momentum Engine"] = momentum
-
-        # ----------------------------------
-        # Explosion Engine
-        # ----------------------------------
-
-        explosion = self.explosion.calculate(context)
-
-        context.results["Explosion Engine"] = explosion
-
-        # ----------------------------------
-        # Trap Engine
-        # ----------------------------------
-
-        trap = self.trap.calculate(context)
-
-        context.results["Trap Engine"] = trap
-
-        # ----------------------------------
-        # Value Engine
-        # ----------------------------------
-
-        value = self.value.calculate(context)
-
-        context.results["Value Engine"] = value
-
-        # ----------------------------------
-        # Lazarus Engine
-        # ----------------------------------
-
-        lazarus = self.lazarus.calculate(context)
-
-        context.results["Lazarus Engine"] = lazarus
-
-        # ----------------------------------
-        # Evidence Engine
-        # ----------------------------------
-
-        evidence = self.evidence.calculate(context)
-
-        context.results["Evidence Engine"] = evidence
-
-        # ----------------------------------
-        # Confidence Engine
-        # ----------------------------------
-
-        confidence = self.confidence.calculate(context)
-
-        context.results["Confidence Engine"] = confidence
-
+        confidence = self._run(context, "Confidence Engine", self.confidence)
         context.features.confidence = confidence.get("score", 0)
 
-        # ----------------------------------
-        # NBS Engine
-        # ----------------------------------
-
-        nbs = self.nbs.calculate(context)
-
-        context.results["NBS Engine"] = nbs
-
-        # ----------------------------------
-        # Recommendation Engine
-        # ----------------------------------
-
-        recommendation = self.recommendation.calculate(context)
-
-        context.results["Recommendation Engine"] = recommendation
-
-        # ----------------------------------
-        # Final Decision Engine
-        # ----------------------------------
-
-        final = self.final.calculate(context)
-
-        context.results["Final Decision Engine"] = final
-
-        context.features.recommendation = final.get(
-            "recommendation",
-            "WAIT"
-        )
+        self._run(context, "Recommendation Engine", self.recommendation)
+        final = self._run(context, "Final Decision Engine", self.final)
+        context.features.recommendation = final.get("recommendation", "WAIT")
 
         return context.results
+
+    @staticmethod
+    def _run(context, name, engine):
+        result = engine.calculate(context)
+        context.results[name] = result
+        return result

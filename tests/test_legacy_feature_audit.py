@@ -1,7 +1,9 @@
 import unittest
 
+from engines.btts_engine import BTTSEngine
 from engines.confidence_engine import ConfidenceEngine
 from engines.form_engine import FormEngine
+from engines.under_engine import UnderEngine
 from extractors.form_extractor import FormExtractor
 from extractors.risk_extractor import RiskExtractor
 from models.analysis_context import AnalysisContext
@@ -54,6 +56,18 @@ class LegacyFeatureAuditTests(unittest.TestCase):
         result = ConfidenceEngine().calculate(AnalysisContext(features=features))
         self.assertEqual(result["score"], 0)
         self.assertEqual(result["reasons"], [])
+
+    def test_empty_metrics_do_not_create_under_or_btts_picks(self):
+        features = FootballFeatures()
+        context = AnalysisContext(features=features)
+        under = UnderEngine().calculate(context)
+        btts = BTTSEngine().calculate(context)
+
+        self.assertFalse(under["under45"])
+        self.assertFalse(under["evidence_available"])
+        self.assertFalse(btts["yes"])
+        self.assertFalse(btts["no"])
+        self.assertFalse(btts["evidence_available"])
 
     def test_feature_factory_carries_fixture_metadata(self):
         match = NormalizedMatch()

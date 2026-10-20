@@ -43,6 +43,8 @@ class MasterEngineOrderTests(unittest.TestCase):
         self.assertIn("Value Engine", results)
         self.assertIn("Evidence Engine", results)
         self.assertIn("Final Decision Engine", results)
+        self.assertEqual(results["Recommendation Engine"]["recommendation"], "WAIT")
+        self.assertEqual(results["Final Decision Engine"]["recommendation"], "WAIT")
 
 
 if __name__ == "__main__":

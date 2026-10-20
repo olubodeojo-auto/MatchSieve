@@ -225,10 +225,11 @@ class FootballFeatures:
         self.trap_risk = 0
         self.explosion_risk = 0
 
-        self.data_quality = 100
-        self.provider_agreement = 100
-
-        self.feature_quality = 100
+        # Unknown until the pipeline measures actual coverage.
+        self.data_quality = 0
+        self.provider_agreement = 0
+        self.feature_quality = 0
+        self.data_availability = {}
 
         self.confidence = 0
 

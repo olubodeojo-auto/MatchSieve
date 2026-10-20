@@ -70,13 +70,15 @@ class MomentumEngine(BaseEngine):
         # Goal Probability
         # ----------------------------------
 
-        if features.goal_probability >= 75:
-            score += 10
-            reasons.append("High goal probability")
-
-        elif features.goal_probability <= 30:
-            score -= 10
-            reasons.append("Low goal probability")
+        # A zero value before Goal Probability Engine runs means "not yet
+        # calculated", not evidence of low scoring potential.
+        if features.goal_probability > 0:
+            if features.goal_probability >= 75:
+                score += 10
+                reasons.append("High goal probability")
+            elif features.goal_probability <= 30:
+                score -= 10
+                reasons.append("Low goal probability")
 
         # ----------------------------------
         # Clamp

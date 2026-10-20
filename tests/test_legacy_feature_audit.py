@@ -3,6 +3,7 @@ import unittest
 from engines.btts_engine import BTTSEngine
 from engines.confidence_engine import ConfidenceEngine
 from engines.form_engine import FormEngine
+from engines.goal_probability_engine import GoalProbabilityEngine
 from engines.under_engine import UnderEngine
 from extractors.form_extractor import FormExtractor
 from extractors.risk_extractor import RiskExtractor
@@ -56,6 +57,28 @@ class LegacyFeatureAuditTests(unittest.TestCase):
         result = ConfidenceEngine().calculate(AnalysisContext(features=features))
         self.assertEqual(result["score"], 0)
         self.assertEqual(result["reasons"], [])
+
+    def test_empty_metrics_do_not_create_goal_probability(self):
+        features = FootballFeatures()
+        result = GoalProbabilityEngine().calculate(AnalysisContext(features=features))
+        self.assertEqual(result["score"], 0)
+        self.assertIsNone(result["probability"])
+        self.assertFalse(result["evidence_available"])
+
+    def test_risk_extractor_maps_explicit_normalized_statistics(self):
+        match = NormalizedMatch()
+        match.statistics = {
+            "home_goal_average": 1.4,
+            "away_goal_average": 1.2,
+            "home_conceded_average": 0.8,
+            "away_conceded_average": 1.0,
+            "btts_rate": 65,
+        }
+        features = RiskExtractor().extract(match, FootballFeatures())
+        self.assertAlmostEqual(features.total_goal_average, 2.6)
+        self.assertTrue(features.data_availability["goal_averages"])
+        self.assertTrue(features.data_availability["conceded_averages"])
+        self.assertTrue(features.data_availability["btts_rate"])
 
     def test_empty_metrics_do_not_create_under_or_btts_picks(self):
         features = FootballFeatures()

@@ -13,8 +13,11 @@ class FormEngine(BaseEngine):
         home_points = sum(features.home_last5)
         away_points = sum(features.away_last5)
         difference = home_points - away_points
+        evidence_available = bool(features.home_last5 and features.away_last5)
 
-        if difference >= 8:
+        if not evidence_available:
+            rating = "UNKNOWN"
+        elif difference >= 8:
             rating = "HOME VERY STRONG"
         elif difference >= 4:
             rating = "HOME STRONG"

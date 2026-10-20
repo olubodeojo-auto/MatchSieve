@@ -155,7 +155,16 @@ class FinalDecisionEngine(BaseEngine):
 
         score = max(0, min(score, 100))
 
-        if trap_score >= 80:
+        availability = getattr(context.features, "data_availability", {}) or {}
+        usable_evidence = any(availability.get(key) for key in (
+            "xg", "form", "h2h", "goal_averages", "btts_rate"
+        ))
+
+        if not usable_evidence:
+            recommendation = "WAIT"
+            reasons.append("Insufficient verified match evidence; final selection withheld")
+
+        elif trap_score >= 80:
 
             recommendation = "AVOID"
 

@@ -60,9 +60,9 @@ class RiskExtractor(BaseExtractor):
             "probabilities": probabilities_available,
             "form": form_available,
             "h2h": h2h_available,
-            "goal_averages": all(getattr(features, key) is not None for key in (
+            "goal_averages": all(key in statistics and self._number(statistics.get(key)) is not None for key in (
                 "home_goal_average", "away_goal_average"
-            )) and all(key in statistics for key in ("home_goal_average", "away_goal_average")),
+            )),
             "conceded_averages": all(key in statistics and self._number(statistics.get(key)) is not None for key in (
                 "home_conceded_average", "away_conceded_average"
             )),
@@ -72,6 +72,9 @@ class RiskExtractor(BaseExtractor):
             "btts_rate": "btts_rate" in statistics and self._number(statistics.get("btts_rate")) is not None,
             "shots": all(key in statistics and self._number(statistics.get(key)) is not None for key in (
                 "home_shots", "away_shots", "home_sot", "away_sot"
+            )),
+            "dangerous_attacks": all(key in statistics and self._number(statistics.get(key)) is not None for key in (
+                "home_dangerous_attacks", "away_dangerous_attacks"
             )),
         }
 

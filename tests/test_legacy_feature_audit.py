@@ -1,5 +1,6 @@
 import unittest
 
+from engines.confidence_engine import ConfidenceEngine
 from engines.form_engine import FormEngine
 from extractors.form_extractor import FormExtractor
 from extractors.risk_extractor import RiskExtractor
@@ -47,6 +48,12 @@ class LegacyFeatureAuditTests(unittest.TestCase):
 
         self.assertLess(features.data_quality, 100)
         self.assertEqual(features.provider_agreement, 0)
+
+    def test_confidence_is_zero_when_no_evidence_exists(self):
+        features = FootballFeatures()
+        result = ConfidenceEngine().calculate(AnalysisContext(features=features))
+        self.assertEqual(result["score"], 0)
+        self.assertEqual(result["reasons"], [])
 
     def test_feature_factory_carries_fixture_metadata(self):
         match = NormalizedMatch()

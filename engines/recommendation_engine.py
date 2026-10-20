@@ -69,7 +69,15 @@ class RecommendationEngine(BaseEngine):
 
         score = max(0, min(score, 100))
 
-        if trap >= 75:
+        availability = getattr(features, "data_availability", {}) or {}
+        usable_evidence = any(availability.get(key) for key in (
+            "xg", "form", "h2h", "goal_averages", "btts_rate"
+        ))
+
+        if not usable_evidence:
+            recommendation = "WAIT"
+            reasons.append("Insufficient verified match evidence; no selection issued")
+        elif trap >= 75:
 
             recommendation = "AVOID"
 

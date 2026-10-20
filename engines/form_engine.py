@@ -33,4 +33,5 @@ class FormEngine(BaseEngine):
             "away_points": away_points,
             "difference": difference,
             "rating": rating,
+            "evidence_available": evidence_available,
         }

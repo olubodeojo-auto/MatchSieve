@@ -63,7 +63,7 @@ class BTTSEngine(BaseEngine):
 
         score = max(0, min(score, 100))
         evidence_available = any(available.get(key) for key in (
-            "btts_rate", "goal_averages", "xg", "form"
+            "btts_rate", "goal_averages", "xg"
         ))
 
         return {

@@ -54,11 +54,11 @@ class EvidenceEngine(BaseEngine):
 
         form = results.get("Form Engine")
 
-        if form:
+        if form and form.get("evidence_available", True):
 
             rating = form.get("rating", "")
-
-            evidence.append(rating)
+            if rating and rating != "UNKNOWN":
+                evidence.append(rating)
 
             if "Strong" in rating:
                 over_score += 5
@@ -116,7 +116,7 @@ class EvidenceEngine(BaseEngine):
         # Confidence
         # -----------------------------
 
-        confidence = 50
+        confidence = 0
 
         confidence += len(evidence) * 5
         confidence -= len(contradictions) * 8

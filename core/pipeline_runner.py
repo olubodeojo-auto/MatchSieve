@@ -13,8 +13,6 @@ class PipelineRunner:
 
         self.builder = MatchBuilder()
 
-        self.fusion = DataFusion()
-
         self.extractors = ExtractorPipeline()
 
         self.master = MasterEngine()
@@ -47,7 +45,9 @@ class PipelineRunner:
         # Data Fusion
         # --------------------------------------
 
-        match = self.fusion.merge(match)
+        # Each fixture gets an independent fusion accumulator. Reusing one here
+        # leaks the previous fixture's identity, score and provider payloads.
+        match = DataFusion().merge(match)
 
         # --------------------------------------
         # Feature Pipeline

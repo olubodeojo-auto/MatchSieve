@@ -17,9 +17,14 @@ class FinalDecisionEngine(BaseEngine):
         # Goal Probability
         # ----------------------------------
 
-        goal = results.get("Goal Probability Engine", {})
+        goal = results.get(
+            "Goal Probability Engine",
+            {}
+        )
 
-        if goal.get("score", 0) >= 75:
+        goal_score = goal.get("score", 0)
+
+        if goal_score >= 75:
 
             score += 20
 
@@ -29,85 +34,118 @@ class FinalDecisionEngine(BaseEngine):
         # Under Engine
         # ----------------------------------
 
-        under = results.get("Under Engine", {})
+        under = results.get(
+            "Under Engine",
+            {}
+        )
 
-        if under.get("score", 0) >= 75:
+        under_score = under.get("score", 0)
+
+        if under_score >= 75:
 
             score += 15
 
-            reasons.append("Strong under profile")
+            reasons.append("Strong Under profile")
 
         # ----------------------------------
-        # BTTS
+        # BTTS Engine
         # ----------------------------------
 
-        btts = results.get("BTTS Engine", {})
+        btts = results.get(
+            "BTTS Engine",
+            {}
+        )
 
-        if btts.get("score", 0) >= 70:
+        btts_score = btts.get("score", 0)
+
+        if btts_score >= 70:
 
             score += 10
 
             reasons.append("Strong BTTS profile")
 
         # ----------------------------------
-        # Explosion
+        # Explosion Engine
         # ----------------------------------
 
-        explosion = results.get("Explosion Engine", {})
+        explosion = results.get(
+            "Explosion Engine",
+            {}
+        )
 
-        if explosion.get("score", 0) >= 75:
+        explosion_score = explosion.get("score", 0)
+
+        if explosion_score >= 75:
 
             score += 15
 
-            reasons.append("Explosion risk")
+            reasons.append("Explosion potential")
 
         # ----------------------------------
-        # Lazarus
+        # Lazarus Engine
         # ----------------------------------
 
-        lazarus = results.get("Lazarus Engine", {})
+        lazarus = results.get(
+            "Lazarus Engine",
+            {}
+        )
 
-        if lazarus.get("score", 0) >= 75:
+        lazarus_score = lazarus.get("score", 0)
+
+        if lazarus_score >= 75:
 
             score += 10
 
             reasons.append("Late goal opportunity")
 
         # ----------------------------------
-        # Trap
+        # Trap Engine
         # ----------------------------------
 
-        trap = results.get("Trap Engine", {})
+        trap = results.get(
+            "Trap Engine",
+            {}
+        )
 
-        if trap.get("score", 0) >= 70:
+        trap_score = trap.get("score", 0)
+
+        if trap_score >= 70:
 
             score -= 25
 
             reasons.append("Trap detected")
 
         # ----------------------------------
-        # NBS
+        # NBS Engine
         # ----------------------------------
 
-        nbs = results.get("NBS Engine", {})
+        nbs = results.get(
+            "NBS Engine",
+            {}
+        )
 
-        if nbs.get("risk") == "LOW":
+        nbs_risk = nbs.get("risk", "MEDIUM")
+
+        if nbs_risk == "LOW":
 
             score += 15
 
             reasons.append("Low NBS risk")
 
-        elif nbs.get("risk") == "HIGH":
+        elif nbs_risk == "HIGH":
 
             score -= 20
 
             reasons.append("High NBS risk")
 
         # ----------------------------------
-        # Confidence
+        # Confidence Engine
         # ----------------------------------
 
-        confidence = results.get("Confidence Engine", 50)
+        confidence = results.get(
+            "Confidence Engine",
+            {}
+        ).get("score", 50)
 
         score += confidence // 10
 
@@ -117,7 +155,11 @@ class FinalDecisionEngine(BaseEngine):
 
         score = max(0, min(score, 100))
 
-        if score >= 85:
+        if trap_score >= 80:
+
+            recommendation = "AVOID"
+
+        elif score >= 85:
 
             recommendation = "STRONG BET"
 
@@ -125,11 +167,11 @@ class FinalDecisionEngine(BaseEngine):
 
             recommendation = "BET"
 
-        elif score >= 55:
+        elif under_score >= 85:
 
             recommendation = "UNDER LEAN STRONG"
 
-        elif score >= 40:
+        elif under_score >= 70:
 
             recommendation = "UNDER LEAN"
 
@@ -142,6 +184,14 @@ class FinalDecisionEngine(BaseEngine):
             "score": score,
 
             "recommendation": recommendation,
+
+            "confidence": confidence,
+
+            "goal_probability": goal_score,
+
+            "under_score": under_score,
+
+            "trap_score": trap_score,
 
             "reasons": reasons
 

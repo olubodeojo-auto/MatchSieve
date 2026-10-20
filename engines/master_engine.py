@@ -174,7 +174,7 @@ class MasterEngine:
 
         context.results["Confidence Engine"] = confidence
 
-        context.features.confidence = confidence
+        context.features.confidence = confidence.get("score", 0)
 
         # ----------------------------------
         # NBS Engine

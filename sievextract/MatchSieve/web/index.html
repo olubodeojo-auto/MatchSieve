@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101817">
+  <meta name="description" content="Evidence-led football match research. Select a fixture, choose a market and review supporting signals, counter-evidence, source history and missing information.">
+  <title>MatchSieve — Football Research, Without the Noise</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="app-frame">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="MatchSieve home">
+        <span class="brand-symbol" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <span><strong>MatchSieve</strong><small>FOOTBALL INTELLIGENCE</small></span>
+      </a>
+      <nav class="top-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="#research">Research</a>
+        <a class="nav-link" href="#history">Report library</a>
+        <a class="nav-link" href="#operator">Data setup</a>
+      </nav>
+      <div class="account-state"><span class="status-dot"></span><span id="connectionLabel">LOCAL PREVIEW</span></div>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-rule"></span> EVIDENCE FIRST. NO FORCED PICKS.</p>
+          <h1 id="hero-title">Football research.<br><em>Without the noise.</em></h1>
+          <p class="hero-lede">Choose a fixture, define the market question and review the evidence in one place. MatchSieve separates the signals that support a market from the facts that argue against it—and makes the gaps visible.</p>
+          <div class="hero-trust"><span><i>01</i> Source trace</span><span><i>02</i> Market fit</span><span><i>03</i> Counter-evidence</span></div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-orbit orbit-one"></div><div class="art-orbit orbit-two"></div><div class="art-orbit orbit-three"></div>
+          <div class="art-grid"></div><div class="art-core"><span>MS</span><small>RESEARCH ENGINE</small></div>
+          <div class="art-note note-one">SIGNAL / NOISE</div><div class="art-note note-two">PROVENANCE</div><div class="art-note note-three">EVIDENCE MAP</div>
+        </div>
+      </section>
+
+      <section class="snapshot-row" aria-label="Workspace status">
+        <article class="snapshot"><span>FIXTURES IN ARCHIVE</span><strong id="fixtureCount">—</strong><small>Stored and searchable</small></article>
+        <article class="snapshot"><span>REPORTS CREATED</span><strong id="reportCount">—</strong><small>Saved with versions</small></article>
+        <article class="snapshot"><span>SOURCE SNAPSHOTS</span><strong id="snapshotCount">—</strong><small>Provenance records</small></article>
+        <article class="snapshot"><span>LOCAL COMMENTARY</span><strong id="ollamaStatus">—</strong><small id="ollamaModel">Optional · Ollama</small></article>
+      </section>
+
+      <section id="research" class="section-heading">
+        <div><p class="eyebrow">THE RESEARCH WORKFLOW</p><h2>Build a market brief</h2><p class="section-subtitle">Your report uses the data currently stored in the archive. If information is missing, it will be labelled as missing—not guessed.</p></div>
+        <span class="step-count">01 <b>/</b> 03</span>
+      </section>
+
+      <section class="research-layout">
+        <div class="panel fixture-panel">
+          <div class="panel-title"><span class="step-icon">01</span><div><p class="eyebrow">FIRST, THE FIXTURE</p><h3>What are we researching?</h3></div></div>
+          <label for="fixtureSearch">Search teams or competition</label>
+          <div class="search-field"><span aria-hidden="true">⌕</span><input id="fixtureSearch" type="search" autocomplete="off" placeholder="e.g. Arsenal, Premier League"><button id="clearSearch" type="button" title="Clear search" aria-label="Clear search">×</button></div>
+          <div class="fixture-filter"><button class="filter-chip active" data-filter="all" type="button">All stored</button><button class="filter-chip" data-filter="scheduled" type="button">Upcoming</button><button class="filter-chip" data-filter="finished" type="button">Completed</button></div>
+          <div id="fixtureResults" class="fixture-results" aria-live="polite"><div class="empty-state"><span class="empty-mark">⌕</span><strong>Looking in your archive</strong><p>Fixtures appear here when imported from a permitted data source or entered by the operator.</p></div></div>
+          <div class="selected-fixture" id="selectedFixture" aria-live="polite">
+            <span class="selected-kicker">SELECTED FIXTURE</span><strong id="selectedTitle">Select a fixture to continue</strong><small id="selectedMeta">Kickoff, competition and source will appear here.</small>
+          </div>
+        </div>
+
+        <div class="panel market-panel">
+          <div class="panel-title"><span class="step-icon">02</span><div><p class="eyebrow">THEN, THE QUESTION</p><h3>Choose the market</h3></div></div>
+          <div id="marketOptions" class="market-options" role="group" aria-label="Research market">
+            <button class="market-option active" data-market="UNDER_4_5" type="button"><span class="market-check">✓</span><strong>Under 4.5 goals</strong><small>Inspect five-plus-goal risk</small></button>
+            <button class="market-option" data-market="OVER_2_5" type="button"><span class="market-check">✓</span><strong>Over 2.5 goals</strong><small>Evidence for three or more goals</small></button>
+            <button class="market-option" data-market="BTTS" type="button"><span class="market-check">✓</span><strong>Both teams to score</strong><small>Review scoring patterns</small></button>
+            <button class="market-option" data-market="UNDER_3_5" type="button"><span class="market-check">✓</span><strong>Under 3.5 goals</strong><small>Inspect lower-goal outcomes</small></button>
+            <button class="market-option" data-market="DOUBLE_CHANCE" type="button"><span class="market-check">✓</span><strong>Double chance context</strong><small>Review win/draw/loss context</small></button>
+            <button class="market-option" data-market="RESULT_1X2" type="button"><span class="market-check">✓</span><strong>Match result context</strong><small>Review the 1X2 record</small></button>
+            <button class="market-option market-option-wide" data-market="RESEARCH_BRIEF" type="button"><span class="market-check">✓</span><strong>Full contextual brief</strong><small>Form, H2H, source coverage and unknowns</small></button>
+          </div>
+          <div class="commentary-toggle"><label class="switch-line" for="useOllama"><input type="checkbox" id="useOllama"><span class="switch-ui"></span><span><strong>Plain-English commentary</strong><small>Optional local AI. Never replaces the structured evidence.</small></span></label><span id="ollamaPill" class="tiny-pill">OFF</span></div>
+          <button id="researchBtn" class="primary-button" type="button" disabled><span>Generate research report</span><b aria-hidden="true">↗</b></button>
+          <p class="microcopy">No guaranteed outcomes, fabricated confidence percentages or auto-published picks. Research is based only on available records.</p>
+        </div>
+      </section>
+
+      <section id="reportSection" class="report-section hidden" aria-live="polite">
+        <div class="section-heading report-heading"><div><p class="eyebrow">THE RESEARCH OUTPUT</p><h2 id="reportHeading">Your research report</h2><p class="section-subtitle" id="reportSubtitle">Evidence captured from your archive.</p></div><div class="report-actions"><button id="downloadReport" class="outline-button" type="button">Download .md</button><button id="copyReport" class="outline-button" type="button">Copy report</button></div></div>
+        <div id="reportContent" class="report-content"></div>
+      </section>
+
+      <section id="history" class="history-section">
+        <div class="section-heading"><div><p class="eyebrow">YOUR SAVED WORK</p><h2>Report library</h2><p class="section-subtitle">Return to an earlier report without running the analysis again.</p></div><button id="refreshHistory" class="outline-button" type="button">Refresh library ↻</button></div>
+        <div id="historyList" class="history-list"><div class="empty-state compact"><strong>No saved reports loaded</strong><p>Your generated reports will appear here.</p></div></div>
+      </section>
+
+      <section id="operator" class="operator-section">
+        <details class="operator-details">
+          <summary><span><span class="operator-mark">⌘</span><span><strong>Data setup & integrations</strong><small>Local operator tools · hidden from the main customer flow</small></span></span><span class="summary-arrow">⌄</span></summary>
+          <div class="operator-body">
+            <div class="operator-intro"><p class="eyebrow">OPERATOR WORKSPACE</p><h3>Bring permitted data into MatchSieve</h3><p>These controls are for local development and curation, not for public customer access. Before public deployment, this area must be moved behind administrator authentication.</p></div>
+            <div class="operator-grid">
+              <div class="operator-card"><h4>Import a CSV</h4><p>Place a file in <code>data/inbox/</code> first. The importer recognises common football-results columns.</p><div class="form-row"><input id="csvFilename" placeholder="filename.csv" aria-label="CSV filename"><button id="importCsvBtn" class="secondary-button" type="button">Import</button></div><div id="intakeMessage" class="inline-message" aria-live="polite"></div></div>
+              <div class="operator-card"><h4>Add one fixture</h4><p>Useful for local smoke tests. A manually added future fixture has no history unless matching completed results are imported.</p><div class="manual-form"><input id="mHome" placeholder="Home team"><input id="mAway" placeholder="Away team"><input id="mComp" placeholder="Competition"><label for="mKickoff">Kickoff date and time</label><input id="mKickoff" type="datetime-local"><input id="mSource" placeholder="Source note / reference"><button id="addFixtureBtn" class="secondary-button" type="button">Save fixture</button></div></div>
+              <div class="operator-card"><h4>Fetch from an approved provider</h4><p>Only the selected adapter runs, and only after it is enabled in <code>.env</code>. A fetch can consume quota and must comply with the source licence.</p><div class="manual-form">
+                <label for="providerChoice">Provider adapter</label><select id="providerChoice"><option value="football_data_org">Football-Data.org</option><option value="sportscore">SportScore</option><option value="openligadb">OpenLigaDB</option></select>
+                <label for="providerDateFrom">Date from (Football-Data.org)</label><input id="providerDateFrom" type="date">
+                <label for="providerDateTo">Date to / date (provider dependent)</label><input id="providerDateTo" type="date">
+                <label for="providerCompetition">Competition code / filter (optional)</label><input id="providerCompetition" placeholder="e.g. PL for Football-Data.org">
+                <label for="providerLeague">OpenLigaDB league shortcut</label><input id="providerLeague" placeholder="e.g. bl1">
+                <label for="providerSeason">OpenLigaDB season</label><input id="providerSeason" placeholder="e.g. 2026">
+                <label for="providerStatus">SportScore status</label><select id="providerStatus"><option value="upcoming">Upcoming</option><option value="finished">Finished</option><option value="all">All (if supported)</option></select>
+                <button id="providerFetchBtn" class="secondary-button" type="button">Fetch selected provider</button>
+              </div><div id="providerFetchMessage" class="inline-message" aria-live="polite"></div><h4 class="subheading">Provider readiness catalogue</h4><div id="providerList" class="provider-list"><span class="muted">Loading provider catalogue…</span></div></div>
+              <div class="operator-card"><h4>Search the knowledge base</h4><p>Saved research, references and notes are indexed locally.</p><div class="form-row"><input id="kbQuery" placeholder="Team, competition, market"><button id="kbSearchBtn" class="secondary-button" type="button">Search</button></div><div id="kbResults" class="kb-results"></div></div>
+            </div>
+            <div class="deployment-warning"><strong>Not yet public-production ready.</strong> Authentication, role separation, subscription entitlements, payment processing, TLS hosting, rate limits, backups and provider licence checks must be completed before exposing this service to customers.</div>
+          </div>
+        </details>
+      </section>
+
+      <footer class="footer"><div class="footer-brand"><span class="brand-symbol small"><span></span><span></span><span></span><span></span></span><strong>MatchSieve</strong></div><span>Evidence can inform research. It cannot guarantee outcomes.</span><span id="footerVersion">LOCAL FOUNDATION · API 0.2</span></footer>
+    </main>
+  </div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

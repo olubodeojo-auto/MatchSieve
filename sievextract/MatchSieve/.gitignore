@@ -1,0 +1,30 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite3
+*.db
+logs/*
+!logs/.gitkeep
+data/inbox/*
+!data/inbox/.gitkeep
+data/archive/*
+!data/archive/.gitkeep
+knowledge-base/snapshots/*
+!knowledge-base/snapshots/.gitkeep
+
+# Android/Gradle outputs
+.gradle/
+build/
+app/build/
+local.properties
+*.jks
+*.keystore
+
+# local reports/logs generated at runtime
+knowledge-base/reports/*.md
+!knowledge-base/reports/README.md

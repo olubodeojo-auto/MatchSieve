@@ -3,7 +3,7 @@ class BaseEngine:
     def __init__(self, name):
         self.name = name
 
-    def calculate(self, match):
+    def calculate(self, context):
         raise NotImplementedError(
-            f"{self.name} must implement calculate()."
+            f"{self.name} must implement calculate(context)."
         )

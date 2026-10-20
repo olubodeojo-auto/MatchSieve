@@ -7,16 +7,19 @@ class EnginePipeline:
     def __init__(self):
 
         self.engines = [
+
             ConfidenceEngine(),
+
             NBSEngine()
+
         ]
 
-    def analyze(self, match):
+    def analyze(self, context):
 
         results = {}
 
         for engine in self.engines:
 
-            results[engine.name] = engine.calculate(match)
+            results[engine.name] = engine.calculate(context)
 
         return results

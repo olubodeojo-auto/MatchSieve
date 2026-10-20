@@ -6,46 +6,70 @@ class NBSEngine(BaseEngine):
     def __init__(self):
         super().__init__("NBS Engine")
 
-    def calculate(self, match):
+    def calculate(self, context):
+
+        features = context.features
 
         score = 0
         reasons = []
 
-        if match.home_team != "Unknown":
-            score += 15
-            reasons.append("Home team identified")
-
-        if match.away_team != "Unknown":
-            score += 15
-            reasons.append("Away team identified")
-
-        if match.league != "Unknown":
-            score += 20
-            reasons.append("League identified")
-
-        if match.venue != "Unknown":
+        if features.home_team:
             score += 10
-            reasons.append("Venue identified")
+            reasons.append("Home team available")
 
-        if match.status in ["NS", "LIVE", "HT", "1H", "2H"]:
-            score += 20
-            reasons.append("Match state supported")
+        if features.away_team:
+            score += 10
+            reasons.append("Away team available")
 
-        if match.season != "Unknown":
-            score += 20
-            reasons.append("Season identified")
+        if features.league:
+            score += 10
+            reasons.append("League available")
 
-        score = min(score, 100)
+        if features.venue:
+            score += 5
+            reasons.append("Venue available")
+
+        if features.status:
+            score += 10
+            reasons.append("Match status available")
+
+        if features.total_xg > 0:
+            score += 10
+            reasons.append("xG available")
+
+        if features.home_odds > 0:
+            score += 10
+            reasons.append("Odds available")
+
+        if features.provider_agreement >= 80:
+            score += 15
+            reasons.append("Provider agreement")
+
+        if features.data_quality >= 80:
+            score += 10
+            reasons.append("High data quality")
+
+        if features.market_stability == "VOLATILE":
+            score -= 15
+            reasons.append("Volatile betting market")
+
+        score = max(0, min(score, 100))
 
         if score >= 85:
             risk = "LOW"
+
         elif score >= 65:
             risk = "MEDIUM"
+
         else:
             risk = "HIGH"
 
         return {
+
             "score": score,
+
             "risk": risk,
+
             "reasons": reasons
+
         }

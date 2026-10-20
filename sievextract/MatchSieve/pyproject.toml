@@ -1,0 +1,10 @@
+[project]
+name = "matchsieve"
+version = "0.3.0"
+description = "Evidence-led football match research service"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

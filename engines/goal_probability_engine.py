@@ -6,7 +6,9 @@ class GoalProbabilityEngine(BaseEngine):
     def __init__(self):
         super().__init__("Goal Probability Engine")
 
-    def calculate(self, features):
+    def calculate(self, context):
+
+        features = context.features
 
         score = 0
         reasons = []
@@ -40,7 +42,7 @@ class GoalProbabilityEngine(BaseEngine):
             reasons.append("Poor BTTS trend")
 
         # --------------------------
-        # Attack Strength
+        # Attack
         # --------------------------
 
         if features.attack_strength >= 80:
@@ -111,18 +113,10 @@ class GoalProbabilityEngine(BaseEngine):
             score -= 8
             reasons.append("Negative momentum")
 
-        # --------------------------
-        # Clamp Score
-        # --------------------------
-
-        score = max(0, min(100, score))
+        score = max(0, min(score, 100))
 
         return {
-
             "score": score,
-
             "probability": score,
-
             "reasons": reasons
-
         }

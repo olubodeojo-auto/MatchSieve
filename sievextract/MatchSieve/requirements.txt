@@ -1,0 +1,2 @@
+# MatchSieve backend runtime uses only Python standard-library modules.
+# No pip dependencies are required for the core research desk or tests.

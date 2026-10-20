@@ -6,51 +6,99 @@ class RecommendationEngine(BaseEngine):
     def __init__(self):
         super().__init__("Recommendation Engine")
 
-    def calculate(self, features):
+    def calculate(self, context):
+
+        results = context.results
+        features = context.features
 
         score = 0
         reasons = []
 
-        if features.goal_probability >= 85:
+        goal = results.get(
+            "Goal Probability Engine",
+            {}
+        ).get("score", 0)
+
+        under = results.get(
+            "Under Engine",
+            {}
+        ).get("score", 0)
+
+        confidence = results.get(
+            "Confidence Engine",
+            {}
+        ).get("score", 0)
+
+        trap = results.get(
+            "Trap Engine",
+            {}
+        ).get("score", 0)
+
+        explosion = results.get(
+            "Explosion Engine",
+            {}
+        ).get("score", 0)
+
+        if goal >= 85:
             score += 30
+            reasons.append("Elite goal probability")
+
+        elif goal >= 70:
+            score += 20
             reasons.append("High goal probability")
 
-        if features.confidence >= 85:
+        if confidence >= 85:
             score += 25
             reasons.append("High confidence")
 
+        elif confidence >= 70:
+            score += 15
+            reasons.append("Good confidence")
+
         if features.market_stability == "STABLE":
-            score += 25
+            score += 10
             reasons.append("Stable market")
 
-        if features.attack_strength > 1:
+        if trap >= 70:
+            score -= 30
+            reasons.append("Trap detected")
+
+        if explosion >= 80:
             score += 10
-            reasons.append("Strong attack profile")
+            reasons.append("Explosion potential")
 
-        if features.total_goal_average >= 2.7:
-            score += 10
-            reasons.append("High goal average")
+        score = max(0, min(score, 100))
 
-        if score >= 90:
-            recommendation = "ENTER"
+        if trap >= 75:
 
-        elif score >= 75:
-            recommendation = "OVER LEAN"
-
-        elif features.under25 >= 85:
-            recommendation = "UNDER LEAN STRONG"
-
-        elif features.under25 >= 70:
-            recommendation = "UNDER LEAN"
-
-        elif features.market_stability == "VOLATILE":
-            recommendation = "WAIT"
-
-        else:
             recommendation = "AVOID"
 
+        elif score >= 85:
+
+            recommendation = "ENTER"
+
+        elif score >= 70:
+
+            recommendation = "OVER LEAN"
+
+        elif under >= 85:
+
+            recommendation = "UNDER LEAN STRONG"
+
+        elif under >= 70:
+
+            recommendation = "UNDER LEAN"
+
+        else:
+
+            recommendation = "WAIT"
+
         return {
+
             "score": score,
+
             "recommendation": recommendation,
+
             "reasons": reasons
+
         }

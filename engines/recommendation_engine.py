@@ -71,7 +71,7 @@ class RecommendationEngine(BaseEngine):
 
         availability = getattr(features, "data_availability", {}) or {}
         usable_evidence = any(availability.get(key) for key in (
-            "xg", "form", "h2h", "goal_averages", "btts_rate"
+            "xg", "goal_averages", "btts_rate", "shots", "dangerous_attacks"
         ))
 
         if not usable_evidence:

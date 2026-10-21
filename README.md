@@ -41,6 +41,15 @@ node --check web/app.js
 5. Build the football knowledge base from source-attributed records; do not treat empty JSON files or unverified predictions as validated knowledge.
 6. Validate the paying customer's job and product value before spending on broad acquisition or adding unsupported features.
 
+## Funnel design and monetisation
+
+- [`docs/UNIVERSAL_FUNNEL_MAP.md`](docs/UNIVERSAL_FUNNEL_MAP.md) — the universal journey, Persona A/B/C entry paths, lead magnet, tripwire, subscription, publisher upsell, thank-you and payment-state flows, geography, platform policy gates and automation.
+- [`web/funnel-preview.html`](web/funnel-preview.html) — interactive design preview for landing, opt-in, lead thank-you, offer, checkout, paid thank-you, pending and failed payment pages. It is a visual prototype only: no lead details are sent or saved and no payments or entitlements are processed.
+- Local preview URL after starting the existing server: `http://127.0.0.1:8765/funnel-preview.html`.
+- Current proposed UK display values are hypotheses only: £2.99 one-off pack, £7.99/month Researcher and £19/month future Publisher pilot. Do not ship these as live prices until product limits and unit economics are measured and the payment provider approves the exact product category.
+- The page allows switching persona messages and market preview paths. Non-UK regions are not approved launches; the preview displays “price not set” for those markets.
+- Payment/processor approval is a launch gate. Payhip, Gumroad and Stripe all publish restrictions relevant to gambling or sports-forecasting products. Obtain a written assessment for MatchSieve's exact offer before using a checkout.
+
 ## Product, customer and conversion work
 
 - [`docs/CUSTOMER_PERSONAS.md`](docs/CUSTOMER_PERSONAS.md) — behavioural personas, psychographic hypotheses, buying triggers and interview scorecard.

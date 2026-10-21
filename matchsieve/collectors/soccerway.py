@@ -20,8 +20,13 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-PAGE_LIMIT = 9
+PAGE_LIMIT = 16
 TEXT_LIMIT = 60_000
+FIXTURE_LINK_LIMIT = 500
+TEAM_FORM_TARGET = 30
+H2H_TARGET = 15
+HISTORY_EXPANSION_CLICKS = 4
+DAY_LIST_ROUTE_CANDIDATES = ("matches/", "matches/")
 KNOWN_ROUTES: tuple[tuple[str, str], ...] = (
     ("summary", ""),
     ("report", "report/"),
@@ -116,6 +121,87 @@ class SoccerwayAdapter:
         self.max_pages = max(1, min(int(max_pages), PAGE_LIMIT))
         self.delay_seconds = max(0.0, float(delay_seconds))
         self.headless = bool(headless)
+
+    @staticmethod
+    def validate_match_list_url(url: str) -> str:
+        """Validate a Soccerway day/matches/fixtures/results list URL."""
+        parsed = urlparse((url or "").strip())
+        host = (parsed.hostname or "").lower()
+        if parsed.scheme not in {"http", "https"} or not host:
+            raise ValueError("Soccerway fixture-list URL must be an absolute HTTP(S) URL.")
+        if host != "soccerway.com" and not host.endswith(".soccerway.com"):
+            raise ValueError("Only Soccerway fixture-list URLs are accepted.")
+        lowered = parsed.path.lower()
+        looks_like_list = (
+            parsed.path.rstrip("/") == ""
+            or any(word in lowered for word in ("matches", "fixtures", "results"))
+        )
+        if not looks_like_list:
+            raise ValueError("URL must point to a Soccerway date/matches/fixtures/results listing.")
+        return urlunparse((parsed.scheme, parsed.netloc, parsed.path, "", parsed.query, ""))
+
+    @staticmethod
+    def _label_kind(label: str) -> str | None:
+        value = re.sub(r"\\s+", " ", (label or "")).strip().lower()
+        if any(word in value for word in ("home form", "home & away", "overall", "last matches", "previous matches")):
+            return "team_form"
+        if any(word in value for word in ("last meetings", "previous meetings", "head-to-head", "head to head", "h2h")):
+            return "h2h_meetings"
+        if any(word in value for word in ("show more", "load more", "more matches", "view more")):
+            return "expand_history"
+        return None
+
+    @staticmethod
+    def _is_expand_control(node: Any) -> bool:
+        try:
+            label = " ".join(filter(None, [
+                node.inner_text(timeout=350),
+                node.get_attribute("aria-label") or "",
+                node.get_attribute("title") or "",
+                node.get_attribute("data-testid") or "",
+            ])).lower()
+            return SoccerwayAdapter._label_kind(label) == "expand_history"
+        except Exception:
+            return False
+
+    @classmethod
+    def _expand_history_panels(cls, page: Any, page_type: str, max_clicks: int = HISTORY_EXPANSION_CLICKS) -> dict[str, Any]:
+        """Expand visible team-form and H2H panels only through explicit UI controls."""
+        clicks = {"team_form": 0, "h2h_meetings": 0, "unknown": 0}
+        warnings: list[str] = []
+        if page_type != "h2h":
+            return {"clicks": clicks, "warnings": warnings}
+        for _ in range(max(0, min(int(max_clicks), HISTORY_EXPANSION_CLICKS))):
+            clicked = False
+            # Buttons first, then links, summary controls. Never click arbitrary interactive elements.
+            for selector in ("button", "a", "[role='button']", "summary"):
+                nodes = page.locator(selector)
+                for index in range(min(nodes.count(), 500)):
+                    node = nodes.nth(index)
+                    if not cls._is_expand_control(node):
+                        continue
+                    try:
+                        label = " ".join(filter(None, [
+                            node.inner_text(timeout=350),
+                            node.get_attribute("aria-label") or "",
+                            node.get_attribute("title") or "",
+                        ])).lower()
+                        kind = cls._label_kind(label) or "unknown"
+                        node.scroll_into_view_if_needed(timeout=800)
+                        node.click(timeout=1000)
+                        page.wait_for_timeout(250)
+                        clicks[kind] = clicks.get(kind, 0) + 1
+                        clicked = True
+                        break
+                    except Exception as exc:
+                        warnings.append(f"History expand control did not open: {type(exc).__name__}")
+                if clicked:
+                    break
+            if not clicked:
+                break
+        if not any(clicks.values()):
+            warnings.append("No accessible history expand control was found; extracted history may be limited.")
+        return {"clicks": clicks, "warnings": warnings}
 
     @staticmethod
     def validate_url(url: str) -> str:

@@ -42,7 +42,9 @@ The adapter uses an ordered, inspectable extraction process:
 
 ### H2H and historical form
 
-The intended research capture for the H2H tab is broader than one visible list. The adapter now looks for explicit “show more” / “load more” controls and tries up to four visible expansions on the H2H page. It records expansion attempts and warnings. This is not yet proven to collect the requested history counts: the implementation still needs section-aware controls and fixture-level tests to verify that team form reaches 20–30 matches per side and H2H meetings reaches 10–15 encounters without mixing the two lists. The page's tab headings, sections and each match row must be stored separately so the research agent can calculate home/away, first-half and second-half splits using the appropriate evidence.
+The intended research capture for the H2H tab is broader than one visible list. The adapter separately targets home-team recent matches, away-team recent matches, and direct H2H meetings. It tries up to four expansion clicks per clearly identified section and stores rows only under a section whose heading/container is distinguishable; otherwise rows stay under `unassigned_visible_history_rows`. Target counts are up to 30 recent matches for each team and up to 15 direct meetings, where the source exposes them. The target counts are not a promise: the extracted row count and headings must be checked, and absent games must never be invented.
+
+On the Stats tab, the collector attempts explicit first-half and second-half controls (where present) and stores those captures separately as `statistics_by_period.full_match`, `first_half` and `second_half`. If the controls do not exist, the resulting warning is evidence of a source limitation, not a reason to scrape around access controls.
 
 The structured extraction is intentionally conservative. A value without an identifiable selector or source context must not be called verified. Score parsing permits a genuine zero score; missing fields are checked against None/empty values, not truthiness. Kick-off values retain their original representation and are **not silently relabelled UTC** when the page's time zone is unknown.
 
@@ -55,13 +57,17 @@ python -m pip install playwright
 python -m playwright install chromium
 ~~~
 
-Collect a fixture:
+First capture the day's list, then collect the selected fixture:
 
 ~~~powershell
-python scripts/collect_soccerway.py "https://www.soccerway.com/match/home-team-id/away-team-id/"
+python scripts/collect_soccerway.py --date-url "https://ng.soccerway.com/"
+python scripts/collect_soccerway.py --date-url "PASTE-ACTUAL-DAY-URL"
+python scripts/collect_soccerway.py --match-url "https://ng.soccerway.com/match/home-team-id/away-team-id/"
 ~~~
 
-The script writes a dated JSON envelope by default under knowledge-base/source-snapshots/soccerway/. The output reports the archive path, number of pages, found fixture fields, missing fields, warnings and errors. It contains the page snapshots plus one pipeline-ready collection record. Review the JSON before relying on the extraction.
+The date/list command saves and prints the visible fixture URLs in page order; use a fixture's actual URL as the stable selection. `--match-index N` can collect the Nth fixture from a newly captured list, but an index is not a stable identifier across changed list ordering. Date-list extraction is still DOM-sensitive and must be checked against the visible list before production use.
+
+The script writes dated JSON under knowledge-base/source-snapshots/soccerway/. The report contains captured page tabs, extracted fields, source URLs, capture times, warnings and gaps. Review the JSON before relying on the extraction.
 
 To review the archived evidence with the specialist-agent runner:
 
@@ -96,7 +102,8 @@ Replace the placeholder with the actual printed filename. The runner is an isola
 - [ ] Run the offline tests in VS Code
 - [ ] Compare output against representative current Soccerway date list and overview, stats, H2H, line-up and commentary pages, where those tabs are available
 - [ ] Make list extraction section-aware so competition, kickoff, teams and match URLs remain correctly grouped
-- [ ] Distinguish team last-matches rows, home/away splits, first-half/second-half evidence, and direct H2H meetings; target 20–30 team matches and 10–15 direct meetings when available
+- [x] Separate storage keys for each team’s recent matches, direct H2H meetings and first-/second-half statistic captures when explicit controls exist
+- [ ] Validate that extracted row counts/section boundaries match representative current pages; targets are up to 30 per team and up to 15 direct meetings, only when shown by source
 - [ ] Replace generic expansion classification with section-aware controls and verify expansion counts against visible source rows
 - [ ] Add reviewed selector fixtures captured in accordance with source terms; test confirmed zero-score, date/time-zone, alternate table and absent-stat cases
 - [ ] Verify commercial-use rights/data licensing before paid publication

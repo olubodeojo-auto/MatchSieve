@@ -142,7 +142,7 @@ class SoccerwayAdapter:
 
     @staticmethod
     def _label_kind(label: str) -> str | None:
-        value = re.sub(r"\\s+", " ", (label or "")).strip().lower()
+        value = re.sub(r"\s+", " ", (label or "")).strip().lower()
         if any(word in value for word in ("home form", "home & away", "overall", "last matches", "previous matches")):
             return "team_form"
         if any(word in value for word in ("last meetings", "previous meetings", "head-to-head", "head to head", "h2h")):

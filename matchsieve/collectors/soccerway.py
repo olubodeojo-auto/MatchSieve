@@ -253,8 +253,10 @@ class SoccerwayAdapter:
                 if not clicked:
                     break
 
-        if not any(clicks[key] for key in targets):
-            warnings.append("No section-specific history expansion could be verified; available history may be limited.")
+        if clicks["home_team_last_matches"] == 0 and clicks["away_team_last_matches"] == 0 and clicks["team_form"] == 0:
+            warnings.append("No section-specific team-form expansion could be verified; available form history may be limited.")
+        if clicks["h2h_meetings"] == 0:
+            warnings.append("No section-specific direct-meetings expansion could be verified; available H2H history may be limited.")
         return {"clicks": clicks, "warnings": warnings}
 
     @staticmethod

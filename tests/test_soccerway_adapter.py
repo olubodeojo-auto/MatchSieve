@@ -48,12 +48,15 @@ class SoccerwayAdapterTests(unittest.TestCase):
     def test_stats_parser_preserves_source_values_without_numeric_guessing(self):
         result = SoccerwayAdapter._stats_from_rows([
             {"cells": ["Expected goals (xG)", "2.98", "1.36"], "text": "Expected goals (xG) | 2.98 | 1.36"},
-            {"cells": ["Ball possession", "50%", "50%"], "text": "Ball possession | 50% | 50%"},
+            {"cells": ["50%", "Ball possession", "50%"], "text": "50% | Ball possession | 50%"},
+            {"cells": ["7", "3", "Shots on target"], "text": "7 | 3 | Shots on target"},
             {"cells": ["Unknown metric", "1", "2"], "text": "Unknown metric | 1 | 2"},
         ])
         self.assertEqual(result["xg"]["home"], "2.98")
         self.assertEqual(result["xg"]["away"], "1.36")
         self.assertEqual(result["possession"]["home"], "50%")
+        self.assertEqual(result["shots_on_target"]["home"], "7")
+        self.assertEqual(result["shots_on_target"]["away"], "3")
         self.assertNotIn("unknown_metric", result)
 
     def test_page_limit_is_bounded(self):

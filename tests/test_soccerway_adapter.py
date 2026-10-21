@@ -59,6 +59,37 @@ class SoccerwayAdapterTests(unittest.TestCase):
         self.assertEqual(result["shots_on_target"]["away"], "3")
         self.assertNotIn("unknown_metric", result)
 
+
+    def test_validate_match_url_accepts_locale_match_route_and_strips_tabs(self):
+        value = SoccerwayAdapter.validate_url(
+            "https://ng.soccerway.com/match/como-ttyLthOA/manchester-united-ppjDR086/summary/stats/"
+        )
+        self.assertEqual(
+            value,
+            "https://ng.soccerway.com/match/como-ttyLthOA/manchester-united-ppjDR086/",
+        )
+
+    def test_validate_match_list_url_accepts_locale_home_or_matches(self):
+        self.assertEqual(
+            SoccerwayAdapter.validate_match_list_url("https://ng.soccerway.com/"),
+            "https://ng.soccerway.com/",
+        )
+        self.assertEqual(
+            SoccerwayAdapter.validate_match_list_url("https://ng.soccerway.com/matches/?date=2026-10-21"),
+            "https://ng.soccerway.com/matches/?date=2026-10-21",
+        )
+
+    def test_validate_match_list_url_rejects_match_detail(self):
+        with self.assertRaises(ValueError):
+            SoccerwayAdapter.validate_match_list_url(
+                "https://ng.soccerway.com/match/home-id/away-id/"
+            )
+
+    def test_history_expand_label_recognition(self):
+        self.assertEqual(SoccerwayAdapter._label_kind("Show more matches"), "expand_history")
+        self.assertEqual(SoccerwayAdapter._label_kind("Last meetings"), "h2h_meetings")
+        self.assertEqual(SoccerwayAdapter._label_kind("Last matches"), "team_form")
+
     def test_page_limit_is_bounded(self):
         self.assertEqual(SoccerwayAdapter(max_pages=500).max_pages, 9)
         self.assertEqual(SoccerwayAdapter(max_pages=0).max_pages, 1)

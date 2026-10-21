@@ -29,11 +29,11 @@ A user may arrive from any channel. The funnel preserves attribution and adapts 
 1. **Arrival:** save consented UTM campaign/source, landing variant, selected persona path and explicitly selected or validated market. Do not depend on hidden IP geolocation alone.
 2. **Orient:** explain MatchSieve in one sentence. One primary CTA. Avoid feature walls and fake social proof.
 3. **Proof:** show a real, manually reviewed and appropriately licensed sample report. Display its fixture/date, data window, source notes, sample size and missing-data limitations. A synthetic prototype can only be labelled as a UI demonstration, never as a real match or customer result.
-4. **Opt in:** offer the 7-Point Match Research Checklist and a sample report. Collect only the email and the minimum useful preference (researcher / comparator / publisher). Keep marketing email consent separate from delivery of the requested resource.
+4. **Opt in:** offer Stop Guessing the Odds — The Football Betting Maths Playbook and a reviewed sample report. Collect only the email and the minimum useful preference (researcher / comparator / publisher). Keep marketing email consent separate from delivery of the requested resource.
 5. **Lead thank-you:** explain what happens next, provide the resource only when the delivery mechanism exists, offer an optional free community link, and show the next useful step.
 6. **Nurture:** a short, consented sequence teaches the report method, shows an actual example, answers the free-alternative objection, and invites a first research session. No false scarcity, manufactured countdown, fake user count or pressure to bet.
 7. **First useful result:** select fixture → select market → generate and inspect report. Clearly state the report's evidence status and gaps.
-8. **Tripwire, optional:** a small one-time credit pack for hesitant or occasional users. Do not interrupt the research flow with a manipulative checkout wall.
+8. **Premium offer:** one UK-first Research Desk membership at a proposed £19/month after a real sample and a clear explanation of limits. No economy tripwire, credit pack or matchday pass at launch. Qualify for serious research intent rather than trying to convert every visitor.
 9. **Core subscription:** offer the monthly plan after users understand the report's value and expected usage. State renewal, allowance, supported competitions, freshness limitations, taxes where relevant, cancellation and refund policy before purchase.
 10. **Payment confirmation:** server-side verified webhook updates payment and entitlement state. A browser redirect alone does not grant access.
 11. **Paid thank-you/onboarding:** only after the server confirms a paid/active entitlement, show the correct account access, how to research the first match, and optional paid-community instructions.
@@ -44,13 +44,13 @@ A user may arrive from any channel. The funnel preserves attribution and adapts 
 
 All paths share the same account, sample-report standard, billing/entitlement service and report engine.
 
-### Path A — Weekend Analyst
+### Path A — Serious Independent Market Researcher
 
 **Likely incoming intent:** match analysis, football stats, Premier League preview, over/under or BTTS research.
 
-**Headline to test:** “One match. One market question. The evidence in one place.”
+**Headline to test:** “Stop guessing the odds. Examine the evidence.”
 
-**Supporting copy:** “Stop stitching together scattered stats. Review the available evidence, what challenges it, its source context and what's missing in one readable brief.”
+**Supporting copy:** “MatchSieve is for serious-minded adults who value evidence more than noise. Inspect the case for a market, the case against it, its source context and what remains unverified.”
 
 **Lead offer:** checklist + reviewed sample report.
 
@@ -86,22 +86,19 @@ All paths share the same account, sample-report standard, billing/entitlement se
 
 **Later paid upgrade:** higher allowance and a batch research workflow. Export and republishing claims must be limited by actual data-provider licences; a subscription does not automatically transfer data rights.
 
-## Offer ladder — adjustable hypotheses
+## Premium UK launch offer — one hypothesis
 
-These are display/test values to illustrate the funnel, not validated prices or live offers.
+The funnel preview is a design concept. The £19 price is a commercial hypothesis, not validated willingness-to-pay and not a live offer.
 
 | Level | Working offer | Test price | Intended job | Launch condition |
 |---|---|---:|---|---|
-| Free | 7-Point Match Research Checklist + reviewed sample | £0 | Demonstrate method and capture qualified leads | Resource actually delivered; consent and privacy copy approved |
-| Tripwire | Weekend Research Pack, e.g. 3 report credits | £2.99 once | Let occasional/sceptical users buy once | Credits, report access, refunds and billing works |
-| Core | Researcher monthly pass, target allowance initially 20 reports/month | £7.99/month | Serve regular independent researchers | Exact limit, costs, entitlements, renewals and cancellation implemented |
-| Price experiment | Same Researcher plan at 7 / 8 / 10 pounds | £7 / £8 / £10 monthly | Find sustainable price | Consistent contents and real comparable cohorts; do not secretly price-discriminate |
-| Publisher pilot | Higher usage allowance + multi-fixture organisation; exports only if licensed | £19/month hypothesis | Serve repeated creator/publisher workflows | Publisher interviews, real features, licence review and evidence of repeat paid use |
-| B2B service, separate offer | Research workflow / publisher operations setup | Not yet priced | Sell a scoped service to an existing publisher/business | Demonstrated capability, scope, case proof, delivery capacity and written contract |
+| Free | Stop Guessing the Odds — The Football Betting Maths Playbook + reviewed sample | £0 | Demonstrate the method and qualify interest | Resource delivery, privacy and consent flows work |
+| Core | MatchSieve Research Desk; proposed cap of 20 full briefs per billing month | £19/month (UK pilot only) | Serve serious independent researchers with a repeat job | Reviewed reports, named competitions, source-rights review, approved payments, secure entitlements and viable service costs |
+| Future publisher service | Higher-volume research workflow and source archive/export only where licensed | Not priced or open | Serve repeat publishers with proven workflow needs | Interviews, existing features, permissions, paid-pilot evidence and delivery capacity |
 
-Start with a single obvious paid choice (Researcher), plus optional one-time pack. Only display the Publisher plan if the features are actually implemented or the page clearly labels it as a future pilot/waitlist.
+Launch with one premium UK paid choice only. No economy pack, matchday pass or multi-country pricing. Do not show a Publisher tier as purchasable until its workflow, permissions and service costs are validated.
 
-**Do not show “unlimited”.** Set monthly credit limits only after provider costs, usage, source licences and rate limits are understood. Do not auto-upgrade credit buyers into recurring billing. Make a credit's expiry or non-expiry explicit before payment.
+**Do not show “unlimited”.** State the report allowance and supported competitions clearly. Do not sell the proposed £19 offer until its allowance is actually enforced and provider costs, source rights, payment eligibility and cancellation work.
 
 ## Geographic routing and pricing
 

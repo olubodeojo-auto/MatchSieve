@@ -1,0 +1,82 @@
+from __future__ import annotations
+from copy import deepcopy
+
+# Amounts are in currency minor units: NGN=kobo, GBP=pence, USD=cents,
+# GHS=pesewas, KES=cents, UGX=shillings, AED=fils, EUR=cents, CAD=cents.
+# Every price below is a PILOT HYPOTHESIS, not validated willingness-to-pay.
+# Select a payment provider only after confirming account/country/currency support.
+REGION_POLICIES = {
+ "NG":{"currency":"NGN","locale":"en-NG","providers":["selar","flutterwave","paystack"],
+   "credit_packs":[{"code":"ng-2","amount_minor":30000,"credits":2},{"code":"ng-6","amount_minor":70000,"credits":6}],
+   "access_plans":[{"code":"ng-72h","amount_minor":50000,"duration_hours":72,"credits":5},
+                   {"code":"ng-week","amount_minor":100000,"duration_days":7,"credits":12},
+                   {"code":"ng-month","amount_minor":250000,"duration_days":30,"credits":40}],
+   "experiment":"NG-A","status":"pilot_hypothesis","payment_note":"Compare Selar, Flutterwave and Paystack net proceeds; confirm Paystack activation and international-payment eligibility."},
+ "GH":{"currency":"GHS","locale":"en-GH","providers":["selar","flutterwave","paystack"],
+   "credit_packs":[{"code":"gh-2","amount_minor":200,"credits":2},{"code":"gh-6","amount_minor":500,"credits":6}],
+   "access_plans":[{"code":"gh-72h","amount_minor":400,"duration_hours":72,"credits":5},
+                   {"code":"gh-week","amount_minor":1000,"duration_days":7,"credits":12},
+                   {"code":"gh-month","amount_minor":3000,"duration_days":30,"credits":40}],
+   "experiment":"GH-A","status":"pilot_hypothesis","payment_note":"Check Selar GHS fees and available mobile-money methods against local gateway costs."},
+ "KE":{"currency":"KES","locale":"en-KE","providers":["selar","flutterwave","paystack"],
+   "credit_packs":[{"code":"ke-2","amount_minor":2000,"credits":2},{"code":"ke-6","amount_minor":5000,"credits":6}],
+   "access_plans":[{"code":"ke-72h","amount_minor":4000,"duration_hours":72,"credits":5},
+                   {"code":"ke-week","amount_minor":10000,"duration_days":7,"credits":12},
+                   {"code":"ke-month","amount_minor":50000,"duration_days":30,"credits":40}],
+   "experiment":"KE-A","status":"pilot_hypothesis","payment_note":"Test M-PESA checkout completion; do not assume card checkout is the preferred route."},
+ "UG":{"currency":"UGX","locale":"en-UG","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"ug-2","amount_minor":1000,"credits":2},{"code":"ug-6","amount_minor":2500,"credits":6}],
+   "access_plans":[{"code":"ug-72h","amount_minor":2000,"duration_hours":72,"credits":5},
+                   {"code":"ug-week","amount_minor":5000,"duration_days":7,"credits":12},
+                   {"code":"ug-month","amount_minor":10000,"duration_days":30,"credits":40}],
+   "experiment":"UG-A","status":"pilot_hypothesis","payment_note":"Confirm USh currency and mobile-money availability and compare fees before launch."},
+ "GB":{"currency":"GBP","locale":"en-GB","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"gb-2","amount_minor":79,"credits":2},{"code":"gb-6","amount_minor":199,"credits":6}],
+   "access_plans":[{"code":"gb-72h","amount_minor":149,"duration_hours":72,"credits":5},
+                   {"code":"gb-week","amount_minor":299,"duration_days":7,"credits":12},
+                   {"code":"gb-month","amount_minor":799,"duration_days":30,"credits":40}],
+   "experiment":"GB-A","status":"pilot_hypothesis","payment_note":"Selar GBP fees are high for low-value orders; use fixed GBP pricing and calculate net proceeds."},
+ "US":{"currency":"USD","locale":"en-US","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"us-2","amount_minor":99,"credits":2},{"code":"us-6","amount_minor":249,"credits":6}],
+   "access_plans":[{"code":"us-72h","amount_minor":199,"duration_hours":72,"credits":5},
+                   {"code":"us-week","amount_minor":399,"duration_days":7,"credits":12},
+                   {"code":"us-month","amount_minor":999,"duration_days":30,"credits":40}],
+   "experiment":"US-A","status":"pilot_hypothesis","payment_note":"Confirm USD settlement, fees and any provider/country restrictions."},
+ "CA":{"currency":"CAD","locale":"en-CA","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"ca-2","amount_minor":129,"credits":2},{"code":"ca-6","amount_minor":299,"credits":6}],
+   "access_plans":[{"code":"ca-72h","amount_minor":249,"duration_hours":72,"credits":5},
+                   {"code":"ca-week","amount_minor":499,"duration_days":7,"credits":12},
+                   {"code":"ca-month","amount_minor":1199,"duration_days":30,"credits":40}],
+   "experiment":"CA-A","status":"pilot_hypothesis","payment_note":"Confirm CAD pricing and settlement with the selected merchant account."},
+ "AE":{"currency":"AED","locale":"en-AE","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"ae-2","amount_minor":300,"credits":2},{"code":"ae-6","amount_minor":700,"credits":6}],
+   "access_plans":[{"code":"ae-72h","amount_minor":500,"duration_hours":72,"credits":5},
+                   {"code":"ae-week","amount_minor":1000,"duration_days":7,"credits":12},
+                   {"code":"ae-month","amount_minor":3000,"duration_days":30,"credits":40}],
+   "experiment":"AE-A","status":"pilot_hypothesis","payment_note":"UAE-specific availability and settlement must be confirmed; do not assume a Nigerian Selar account can settle AED directly."},
+ "DE":{"currency":"EUR","locale":"de-DE","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"de-2","amount_minor":79,"credits":2},{"code":"de-6","amount_minor":199,"credits":6}],
+   "access_plans":[{"code":"de-72h","amount_minor":149,"duration_hours":72,"credits":5},
+                   {"code":"de-week","amount_minor":299,"duration_days":7,"credits":12},
+                   {"code":"de-month","amount_minor":799,"duration_days":30,"credits":40}],
+   "experiment":"EU-A","status":"pilot_hypothesis","payment_note":"Confirm EU payment availability, tax, consumer rights and local price display before activation."},
+ "FR":{"currency":"EUR","locale":"fr-FR","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"fr-2","amount_minor":79,"credits":2},{"code":"fr-6","amount_minor":199,"credits":6}],
+   "access_plans":[{"code":"fr-72h","amount_minor":149,"duration_hours":72,"credits":5},
+                   {"code":"fr-week","amount_minor":299,"duration_days":7,"credits":12},
+                   {"code":"fr-month","amount_minor":799,"duration_days":30,"credits":40}],
+   "experiment":"EU-A","status":"pilot_hypothesis","payment_note":"Confirm EU payment availability, tax, consumer rights and local price display before activation."},
+ "ES":{"currency":"EUR","locale":"es-ES","providers":["selar","flutterwave"],
+   "credit_packs":[{"code":"es-2","amount_minor":79,"credits":2},{"code":"es-6","amount_minor":199,"credits":6}],
+   "access_plans":[{"code":"es-72h","amount_minor":149,"duration_hours":72,"credits":5},
+                   {"code":"es-week","amount_minor":299,"duration_days":7,"credits":12},
+                   {"code":"es-month","amount_minor":799,"duration_days":30,"credits":40}],
+   "experiment":"EU-A","status":"pilot_hypothesis","payment_note":"Confirm EU payment availability, tax, consumer rights and local price display before activation."},
+}
+def get_region_policy(country_code: str) -> dict:
+    code=(country_code or "").strip().upper()
+    if code not in REGION_POLICIES:
+        raise KeyError(f"No pricing policy configured for country {code!r}.")
+    return deepcopy(REGION_POLICIES[code])
+def list_region_policies() -> dict:
+    return deepcopy(REGION_POLICIES)

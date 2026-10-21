@@ -37,7 +37,8 @@ class SoccerwayAdapterTests(unittest.TestCase):
         self.assertIn("lineups", mapping)
         self.assertNotIn("different match", mapping)
         self.assertTrue(all("example.org" not in item["url"] for item in found))
-        self.assertTrue(all("/match/home-id/away-id/" in item["url"] for item in found))
+        self.assertEqual(mapping["stats"], "https://www.soccerway.com/match/home-id/away-id/summary/stats/?mid=match-1")
+        self.assertEqual(mapping["lineups"], "https://www.soccerway.com/match/home-id/away-id/summary/lineups/?mid=match-1")
 
     def test_title_parser_extracts_teams_without_claiming_a_score(self):
         self.assertEqual(

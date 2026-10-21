@@ -385,7 +385,6 @@ class SoccerwayAdapter:
     def _extract_fixture_rows(page: Any, source_url: str, *, max_fixtures: int = FIXTURE_LINK_LIMIT) -> list[dict[str, Any]]:
         fixtures: list[dict[str, Any]] = []
         seen: set[str] = set()
-        current_competition: str | None = None
         # Work through semantic match links and visible row/card containers; the link target,
         # not a guessed URL, becomes the selected fixture's canonical entry point.
         selectors = (
@@ -441,8 +440,6 @@ class SoccerwayAdapter:
                         except Exception:
                             pass
                     kickoff_match = re.search(r"\b(\d{1,2}:\d{2})\b", full_line)
-                    score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", full_line)
-                    status = next((value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled") if re.search(r"\b"+re.escape(value)+r"\b", full_line, re.I)), None)
                     # Only treat a short competition label as a competition; don't infer it from a page-wide ancestor.
                     competition = None
                     if container:
@@ -452,15 +449,13 @@ class SoccerwayAdapter:
                         )
                         if possible:
                             competition = re.sub(r"\s+", " ", possible.group(1)).strip(" -|")
-                    score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", full_line)
-                    status = next((value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled") if re.search(r"\b"+re.escape(value)+r"\b", full_line, re.I)), None)
                     if not (home_team and away_team):
                         continue
                     fixtures.append({
                         "source": "Soccerway",
                         "source_url": canonical,
                         "page_identity": "/".join([part for part in urlparse(canonical).path.split("/") if part][:3]),
-                        "competition": competition or current_competition,
+                        "competition": competition,
                         "home_team": home_team,
                         "away_team": away_team,
                         "kickoff_display": kickoff_match.group(1) if kickoff_match else None,

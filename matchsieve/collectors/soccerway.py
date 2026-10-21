@@ -527,7 +527,10 @@ class SoccerwayAdapter:
                             if status is not None and status >= 400:
                                 warnings.append(f"Tab unavailable (HTTP {status}): {candidate}")
                                 continue
+                            history_expansion = self._expand_history_panels(page, item["page_type"])
                             captured = self._capture_page(page, response, item["page_type"], item["link_label"])
+                            captured["history_expansion"] = history_expansion
+                            warnings.extend(history_expansion.get("warnings", []))
                             if captured["access_blocked"]:
                                 blocked = True
                                 warnings.append("A challenge/access-control page was detected; collection stopped.")

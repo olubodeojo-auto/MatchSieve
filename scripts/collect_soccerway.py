@@ -47,6 +47,8 @@ def main() -> int:
         ).collect(args.url)
     except (ValueError, RuntimeError) as exc:
         parser.error(str(exc))
+    except Exception as exc:
+        parser.exit(2, f"Collection failed ({type(exc).__name__}): {exc}\\n")
 
     record = (collection.get("records") or [{}])[0]
     facts = record.get("facts") or {}

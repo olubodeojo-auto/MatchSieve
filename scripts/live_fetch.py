@@ -18,7 +18,7 @@ def main() -> None:
     today = datetime.now(timezone.utc).date().isoformat()
     parser = argparse.ArgumentParser(description="Fetch and archive live football fixtures")
     parser.add_argument("--provider", required=True, choices=[
-        "api_football", "thesportsdb", "sportscore", "openligadb", "football_data_org"
+        "api_football", "thesportsdb", "sportscore", "openligadb", "football_data_org", "sportmonks", "footballdata_io", "livefootball"
     ])
     parser.add_argument("--date", default=today)
     parser.add_argument("--league")
@@ -29,6 +29,12 @@ def main() -> None:
 
     if args.provider == "api_football":
         kwargs = {"date": args.date, "league": args.league, "season": args.season, "status": args.status}
+    elif args.provider == "sportmonks":
+        kwargs = {"date": args.date}
+    elif args.provider == "livefootball":
+        kwargs = {"date": args.date}
+    elif args.provider == "footballdata_io":
+        kwargs = {"date_from": args.date, "date_to": args.date}
     elif args.provider == "thesportsdb":
         kwargs = {"date": args.date, "sport": "Soccer", "league": args.competition}
     elif args.provider == "sportscore":

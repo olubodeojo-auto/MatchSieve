@@ -58,6 +58,15 @@ class MatchSieveHttpApiTests(unittest.TestCase):
         with urllib.request.urlopen(self.base + "/app.js", timeout=3) as response:
             self.assertEqual(200, response.status)
 
+    def test_funnel_preview_is_served_as_static_design_only(self):
+        with urllib.request.urlopen(self.base + "/funnel-preview.html", timeout=3) as response:
+            self.assertEqual(200, response.status)
+            self.assertIn("text/html", response.headers.get("Content-Type", ""))
+            body = response.read()
+        self.assertIn(b"FUNNEL DESIGN PREVIEW", body)
+        self.assertIn(b"NO EMAILS ARE SENT", body)
+        self.assertIn(b"Payment confirmation", body) if b"Payment confirmation" in body else self.assertIn(b"payment", body.lower())
+
     def test_mobile_fixture_to_report_history_and_detail(self):
         status, created = self.post_json("/api/fixture", {
             "competition": "Synthetic Test League",

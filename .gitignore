@@ -27,3 +27,7 @@ data/archive/*
 
 # Supabase local state
 supabase/.temp/
+
+# Local source-page snapshots (keep source extracts out of public Git history)
+knowledge-base/source-snapshots/soccerway/*
+!knowledge-base/source-snapshots/soccerway/.gitkeep

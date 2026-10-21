@@ -12,9 +12,9 @@ MatchSieve is a premium, evidence-led football research desk being developed fro
 
 The Supabase project is newly created. No schema or data has been migrated into it yet. The root foundation uses a local SQLite archive for its initial offline-first workflow; do not point production data at Supabase until the schema and migration plan have been reviewed.
 
-## Collect a Soccerway match (local research only)
+## Collect the daily Soccerway fixture list and a selected match
 
-The dedicated `matchsieve.collectors.soccerway.SoccerwayAdapter` is the source-specific collection adapter. It discovers known same-match tabs, tries documented route patterns, extracts structured fields where available, saves page-level provenance and states which fields were not found. It does not bypass logins, CAPTCHAs, HTTP denials or rate limits. A site's presence on the web does not grant commercial reuse rights; review the applicable terms before any paid use.
+The dedicated `matchsieve.collectors.soccerway.SoccerwayAdapter` is a source-specific collection adapter. The intended workflow is **date/matches page → complete visible fixture list → selected match → actual tabs and available history**. It preserves source URLs and page context, and marks missing fields instead of filling them with guesses. It stops on access denial, CAPTCHA or rate limiting.
 
 Install Playwright and Chromium once:
 
@@ -23,13 +23,27 @@ python -m pip install playwright
 python -m playwright install chromium
 ```
 
-Capture one match into the local knowledge-base archive:
+First, collect the day/list page and save the visible fixture list:
 
 ```powershell
-python scripts/collect_soccerway.py "https://www.soccerway.com/match/home-team-id/away-team-id/"
+python scripts/collect_soccerway.py --date-url "https://ng.soccerway.com/"
 ```
 
-The command prints the exact archive path, captured pages, extracted fields, warnings and gaps. Inspect the resulting JSON before research use; missing xG, line-ups, events or other metrics remain missing and are never replaced with invented values. The scraper is not yet verified against the site's current live DOM in this commit.
+For a specific date, use the actual date/list URL copied from Soccerway when available:
+
+```powershell
+python scripts/collect_soccerway.py --date-url "PASTE-ACTUAL-SOCCERWAY-DAY-URL"
+```
+
+Review the numbered fixtures and then collect the chosen match by its actual URL:
+
+```powershell
+python scripts/collect_soccerway.py --match-url "https://ng.soccerway.com/match/home-team-id/away-team-id/"
+```
+
+Or use `--match-index N` alongside `--date-url` to collect one fixture from that captured list. This index is only valid for the exact list just collected; the actual match URL is the stable identity.
+
+The collector attempts the visible match tabs and separately records team recent-match history and direct H2H meetings when clear section boundaries exist. It attempts first-half/second-half stats only when the Stats page exposes explicit controls. It does not guarantee 30 recent games per team, 15 H2H meetings, or period metrics when the source doesn't publish them or the page DOM cannot be confidently classified. All output must be reviewed before using it for research. It has not yet been validated against a controlled set of live fixture-list/H2H/Stats pages or integrated into the live report flow. Commercial source-use rights must be cleared before selling reports built from source data.
 
 ## Run the local research desk
 

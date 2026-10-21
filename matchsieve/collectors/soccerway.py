@@ -440,6 +440,8 @@ class SoccerwayAdapter:
                         except Exception:
                             pass
                     kickoff_match = re.search(r"\b(\d{1,2}:\d{2})\b", full_line)
+                    score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", full_line)
+                    status = next((value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled") if re.search(r"\b" + re.escape(value) + r"\b", full_line, re.I)), None)
                     # Only treat a short competition label as a competition; don't infer it from a page-wide ancestor.
                     competition = None
                     if container:

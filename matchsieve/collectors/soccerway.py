@@ -450,17 +450,33 @@ class SoccerwayAdapter:
     def _stats_from_rows(rows: list[dict[str, Any]]) -> dict[str, dict[str, str]]:
         stats: dict[str, dict[str, str]] = {}
         for row in rows:
-            cells = row.get("cells") or []
+            cells = [str(cell).strip() for cell in (row.get("cells") or [])]
             if len(cells) < 3:
                 continue
-            label = re.sub(r"\s+", " ", str(cells[0]).strip()).lower()
-            key = STAT_ALIASES.get(label)
-            if not key:
+            label_index: int | None = None
+            key: str | None = None
+            for index, cell in enumerate(cells):
+                normalised = re.sub(r"\s+", " ", cell).lower()
+                candidate_key = STAT_ALIASES.get(normalised)
+                if candidate_key:
+                    label_index, key = index, candidate_key
+                    break
+            if label_index is None or key is None:
                 continue
-            # Only a row containing a label plus two explicit side values is accepted.
-            home, away = str(cells[-2]).strip(), str(cells[-1]).strip()
+            # Soccerway-like tables may put the metric in the centre (home | label | away)
+            # or at one edge (label | home | away). Parse only explicit adjacent side values.
+            if label_index == 0:
+                home, away = cells[1], cells[2]
+            elif label_index == len(cells) - 1:
+                home, away = cells[-3], cells[-2]
+            else:
+                home, away = cells[label_index - 1], cells[label_index + 1]
             if home and away:
-                stats[key] = {"home": home, "away": away, "source_label": str(cells[0])}
+                stats[key] = {
+                    "home": home,
+                    "away": away,
+                    "source_label": cells[label_index],
+                }
         return stats
 
     @staticmethod

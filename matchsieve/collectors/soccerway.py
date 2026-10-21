@@ -44,6 +44,29 @@ SECTION_WORDS = {
     "report": ("report", "match report"),
     "summary": ("summary", "overview", "match"),
 }
+# Explicit, source-specific DOM selector families. Soccerway may change its
+# classes; each result stores the selector that produced it so extraction can
+# be audited instead of silently trusting a generic body-text scrape.
+DOM_SELECTOR_GROUPS = {
+    "home_team": (
+        "[data-testid*='home-team' i]", "[class*='home-team-name' i]",
+        "[class*='homeTeam' i] [class*='name' i]", ".home .team-name",
+        ".home-team a[href*='/team/']",
+    ),
+    "away_team": (
+        "[data-testid*='away-team' i]", "[class*='away-team-name' i]",
+        "[class*='awayTeam' i] [class*='name' i]", ".away .team-name",
+        ".away-team a[href*='/team/']",
+    ),
+    "team_names": ("[class*='team-name' i]", "[data-testid*='team-name' i]", "a[href*='/team/']"),
+    "score": ("[data-testid*='score' i]", "[class*='score' i]", "[class*='result' i]"),
+    "kickoff": ("time[datetime]", "[data-testid*='kickoff' i]", "[class*='kickoff' i]", "[class*='match-date' i]"),
+    "competition": (
+        "nav[aria-label*='breadcrumb' i] a", "ol[class*='breadcrumb' i] a",
+        "[class*='competition' i] a", "a[href*='/competition/']",
+    ),
+    "venue": ("[data-testid*='venue' i]", "[class*='venue' i]", "[class*='stadium' i]"),
+}
 STAT_ALIASES = {
     "expected goals": "xg",
     "expected goals (xg)": "xg",
@@ -334,12 +357,19 @@ class SoccerwayAdapter:
             "verify you are human", "checking your browser", "captcha", "access denied",
             "unusual traffic", "temporarily blocked"
         ))
+        # Some tabs hydrate after DOMContentLoaded. A short, bounded settling
+        # period is safer than waiting for network-idle on a busy scores site.
+        try:
+            page.wait_for_timeout(650)
+        except Exception:
+            pass
         tables = self._table_rows(page)
         stats = self._stats_from_rows(tables)
         players = self._player_links(page) if page_type in {"lineups", "player_stats", "summary"} else []
         events = self._event_rows(page, text) if page_type in {"commentary", "summary", "report"} else []
         structured = self._json_ld(page)
         headings = self._headings(page)
+        dom_fields = self._dom_fields(page)
         return {
             "page_type": page_type,
             "link_label": link_label,
@@ -348,6 +378,7 @@ class SoccerwayAdapter:
             "captured_at": utc_now(),
             "title": title[:500],
             "headings": headings[:30],
+            "dom_fields": dom_fields,
             "text": text,
             "table_rows": tables[:300],
             "statistics": stats,
@@ -356,6 +387,33 @@ class SoccerwayAdapter:
             "json_ld": structured[:10],
             "access_blocked": access_blocked,
         }
+
+    @staticmethod
+    def _dom_fields(page: Any) -> dict[str, list[dict[str, str]]]:
+        """Extract field candidates via explicit selector families, with provenance."""
+        output: dict[str, list[dict[str, str]]] = {}
+        for field, selectors in DOM_SELECTOR_GROUPS.items():
+            candidates: list[dict[str, str]] = []
+            seen: set[str] = set()
+            for selector in selectors:
+                loc = page.locator(selector)
+                for index in range(min(loc.count(), 12)):
+                    try:
+                        node = loc.nth(index)
+                        value = node.get_attribute("datetime") if field == "kickoff" else None
+                        value = value or (node.inner_text(timeout=450) or "").strip()
+                        value = re.sub(r"\s+", " ", value).strip()
+                        if not value or value in seen:
+                            continue
+                        seen.add(value)
+                        candidates.append({"value": value[:240], "selector": selector})
+                    except Exception:
+                        continue
+                if field in {"home_team", "away_team", "kickoff", "venue"} and candidates:
+                    break
+            if candidates:
+                output[field] = candidates
+        return output
 
     @staticmethod
     def _headings(page: Any) -> list[str]:
@@ -440,9 +498,9 @@ class SoccerwayAdapter:
         for line in candidates:
             if line not in seen:
                 seen.add(line)
-                kind = "goal" if re.search(r"\bgoal\b", line, re.I) else (
-                    "card" if re.search(r"\bcard|booking|sent off\b", line, re.I) else (
-                    "substitution" if re.search(r"substitut|\bfor\b", line, re.I) else "event"))
+                kind = "goal" if re.search(r"\b(?:goal|own goal|penalty|missed penalty)\b", line, re.I) else (
+                    "card" if re.search(r"\b(?:yellow card|red card|booking|sent off)\b", line, re.I) else (
+                    "substitution" if re.search(r"\bsubstitut(?:ion|ed)\b", line, re.I) else "event"))
                 result.append({"kind": kind, "text": line})
         if not result:
             for line in body_text.splitlines():
@@ -511,13 +569,44 @@ class SoccerwayAdapter:
             title = item.get("title") or ""
             headings = item.get("headings") or []
             body_text = item.get("text") or ""
+            dom = item.get("dom_fields") or {}
+            if not match.get("home_team"):
+                exact = dom.get("home_team") or []
+                if exact:
+                    match["home_team"] = exact[0]["value"]
+            if not match.get("away_team"):
+                exact = dom.get("away_team") or []
+                if exact:
+                    match["away_team"] = exact[0]["value"]
+            team_candidates = [x["value"] for x in (dom.get("team_names") or [])]
+            if not (match.get("home_team") and match.get("away_team")) and len(team_candidates) >= 2:
+                if not match.get("home_team"):
+                    match["home_team"] = team_candidates[0]
+                if not match.get("away_team"):
+                    match["away_team"] = team_candidates[1]
             for candidate in [*headings, title]:
                 pair = cls._teams_from_title(str(candidate))
                 if pair and not (match.get("home_team") and match.get("away_team")):
                     match["home_team"], match["away_team"] = pair
                     break
             if not match.get("competition"):
-                match["competition"] = cls._competition_from_page(item)
+                comp = dom.get("competition") or []
+                match["competition"] = comp[-1]["value"] if comp else cls._competition_from_page(item)
+            if not match.get("kickoff"):
+                times = dom.get("kickoff") or []
+                if times:
+                    match["kickoff"] = times[0]["value"]
+                    match["kickoff_time_basis"] = "Soccerway DOM datetime/display value; timezone not confirmed"
+            if not match.get("venue"):
+                venues = dom.get("venue") or []
+                if venues:
+                    match["venue"] = venues[0]["value"]
+            if match.get("home_score") is None or match.get("away_score") is None:
+                for candidate in (dom.get("score") or []):
+                    score = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", candidate["value"])
+                    if score:
+                        match["home_score"], match["away_score"] = int(score.group(1)), int(score.group(2))
+                        break
             if not match.get("kickoff"):
                 kickoff = re.search(
                     r"\b(\d{1,2}[./-]\d{1,2}[./-]\d{4}(?:\s+\d{1,2}:\d{2})?)\b",
@@ -536,7 +625,7 @@ class SoccerwayAdapter:
                 venue = re.search(r"\b(?:Venue|Stadium)\s*:?\s*([^\n]{2,100})", body_text, re.I)
                 if venue:
                     match["venue"] = venue.group(1).strip()
-            if not match.get("home_score") or not match.get("away_score"):
+            if match.get("home_score") is None or match.get("away_score") is None:
                 for row in item.get("table_rows", []):
                     cells = row.get("cells") or []
                     if len(cells) == 1:

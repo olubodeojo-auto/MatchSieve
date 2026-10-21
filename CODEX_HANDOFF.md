@@ -87,3 +87,27 @@ These are real gates, not items to mock as complete:
 ## Response expected from Codex
 
 Return an audit table with `PASS / FAIL / NOT TESTED`, command evidence and file paths. Make the smallest high-confidence changes. For each remaining blocker, state why it is blocked and the exact operator input needed. Do not mark external credentials, legal rights, app-store review or production deployment “complete” based on local code alone.
+
+## Phase 6 — consumer funnel wiring (new, design exists)
+
+Read these files before implementing:
+- `docs/UNIVERSAL_FUNNEL_MAP.md` — universal journey, offer ladder, region-routing policy, thank-you/payment states, community, platform-policy gates and automation choices.
+- `web/funnel-preview.html` — interactive visual prototype of landing, opt-in, lead thank-you, offers, checkout and payment outcomes. It is deliberately front-end-only and must not be represented as live.
+- `docs/COPY_BANK.md` and `docs/PAYING_CUSTOMER_PLAYBOOK.md` — approved claim boundaries and persona messaging.
+- `docs/CONVERSION_EXPERIMENTS.md` — measurable validation plan.
+
+Acceptance criteria:
+1. The local GET route `/funnel-preview.html` serves only the design preview. Preserve the static asset allowlist; do not change it to unrestricted arbitrary file serving.
+2. Convert the approved landing/opt-in/thank-you design into the real web app only after the project owner approves the visible page. Keep the core report workspace and funnel pages as clear separate routes.
+3. Replace browser-only demo transitions with a real, validated lead-capture endpoint before any live use. Record legal basis/marketing consent separately, minimise stored data, add rate limiting, email validation, deduplication and deletion/retention rules. Add tests for invalid input, duplicate submit, consent states and delivery failure. Do not collect or send data from the preview page itself.
+4. Use approved server-side product/plan configuration for prices and allowances. Do not hard-code a checkout amount in client code as the source of truth. The current £2.99 / £7.99 / £19 numbers are design hypotheses only.
+5. Do not integrate Payhip, Gumroad, Stripe or another processor for the paid MatchSieve research product until the owner obtains written confirmation that the exact product, marketing and territory are accepted. These platforms publish restrictions relevant to gambling/sports forecasting; hiding the actual product function or mislabelling it is not an acceptable workaround.
+6. Once approval is obtained, implement signed webhook verification, idempotency, correct payment/subscription state transitions, event audit, retries, refund/cancellation/chargeback handling, and server-side entitlements. A thank-you redirect must never grant paid access on its own.
+7. Free community membership is optional and independent of payment. A paid Telegram invite must be issued only after verified active entitlement, should expire or be limited where practical, and must be revoked/re-evaluated when entitlement ends. Treat WhatsApp group links as shareable; app entitlement remains authoritative.
+8. Country-specific prices/checkout must be an explicit, documented and tested pricing policy with final displayed currency, tax, renewal and cancellation details. Do not rely on IP geolocation alone to silently surprise customers. The UK is the first proposed pilot; other markets remain unapproved until billing, demand, tax and marketing reviews complete.
+9. Add event definitions and consent-aware analytics only after privacy review. Never include personal data in UTM values, log payment data, or infer sensitive gambling vulnerability for advertising.
+10. Add tests and report their exact local outputs. Do not claim the funnel is production-ready based on a static preview, an email provider connection or a successful browser redirect.
+
+## Additional marketing integrity guardrail
+
+Do not create or market an ebook titled “How to Bet Safely and Compound Daily.” The copy could imply betting is safe and that daily gains are expected. An educational resource can explain odds, uncertainty, variance, sample-size pitfalls, responsible limits and record-keeping without giving guaranteed outcomes or encouraging loss recovery. Prefer the product-aligned lead magnet “The 7-Point Match Research Checklist.”

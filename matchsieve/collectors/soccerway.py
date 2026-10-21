@@ -205,22 +205,6 @@ class SoccerwayAdapter:
 
     @staticmethod
     def validate_url(url: str) -> str:
-        """Validate a match/game URL and return the base URL for this fixture."""
-        parsed = urlparse((url or "").strip())
-        host = (parsed.hostname or "").lower()
-        if parsed.scheme not in {"http", "https"} or not host:
-            raise ValueError("Soccerway URL must be an absolute HTTP(S) URL.")
-        if host != "soccerway.com" and not host.endswith(".soccerway.com"):
-            raise ValueError("Only Soccerway URLs are accepted by this adapter.")
-        segments = [part for part in parsed.path.split("/") if part]
-        if len(segments) < 3 or segments[0].lower() not in {"match", "game"}:
-            raise ValueError("URL must point to a Soccerway match/game page.")
-        base_segments = segments[:3]
-        base_path = "/" + "/".join(base_segments) + "/"
-        return urlunparse((parsed.scheme, parsed.netloc, base_path, "", parsed.query, ""))
-
-    @staticmethod
-    def validate_url(url: str) -> str:
         """Validate a visible match URL. Accept locale-prefixed and /football/match/ routes."""
         parsed = urlparse((url or "").strip())
         host = (parsed.hostname or "").lower()

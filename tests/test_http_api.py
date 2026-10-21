@@ -65,7 +65,7 @@ class MatchSieveHttpApiTests(unittest.TestCase):
             body = response.read()
         self.assertIn(b"FUNNEL DESIGN PREVIEW", body)
         self.assertIn(b"NO EMAILS ARE SENT", body)
-        self.assertIn(b"Payment confirmation", body) if b"Payment confirmation" in body else self.assertIn(b"payment", body.lower())
+        self.assertIn(b"payment", body.lower())
 
     def test_mobile_fixture_to_report_history_and_detail(self):
         status, created = self.post_json("/api/fixture", {

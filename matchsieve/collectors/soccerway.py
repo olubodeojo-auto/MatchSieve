@@ -719,6 +719,12 @@ class SoccerwayAdapter:
                                 warnings.append("A challenge/access-control page was detected; collection stopped.")
                                 break
                             pages.append(captured)
+                            if item["page_type"] == "stats":
+                                period_pages, period_warnings = self._capture_stat_period_variants(
+                                    page, candidate, base_url
+                                )
+                                pages.extend(period_pages)
+                                warnings.extend(period_warnings)
                             seen_urls.add(self._normalise_url(page.url))
                         except Exception as exc:
                             errors.append(f"{item['page_type']} tab failed: {type(exc).__name__}: {exc}")
@@ -740,6 +746,7 @@ class SoccerwayAdapter:
             "page_types_seen": [x["page_type"] for x in pages],
             "pages": pages,
             "statistics": aggregate["statistics"],
+            "statistics_by_period": aggregate.get("statistics_by_period", {}),
             "history": aggregate.get("history", {}),
             "lineups": aggregate["lineups"],
             "events": aggregate["events"],
@@ -795,6 +802,52 @@ class SoccerwayAdapter:
             except Exception:
                 continue
         return output
+
+    def _capture_stat_period_variants(
+        self, page: Any, stats_url: str, base_match_url: str
+    ) -> tuple[list[dict[str, Any]], list[str]]:
+        """Capture first-half and second-half statistics only when explicit controls exist."""
+        captured: list[dict[str, Any]] = []
+        warnings: list[str] = []
+        periods = (
+            ("first_half", {"first half", "1st half", "first half stats", "1st half stats"}),
+            ("second_half", {"second half", "2nd half", "second half stats", "2nd half stats"}),
+        )
+        for period, labels in periods:
+            found = False
+            for selector in ("button", "[role='tab']", "a", "[role='button']"):
+                nodes = page.locator(selector)
+                for index in range(min(nodes.count(), 400)):
+                    node = nodes.nth(index)
+                    label = self._expand_control_text(node)
+                    normalised = re.sub(r"[\s\-_]+", " ", label).strip().lower()
+                    if normalised not in labels:
+                        continue
+                    try:
+                        node.scroll_into_view_if_needed(timeout=800)
+                        node.click(timeout=1200)
+                        page.wait_for_timeout(350)
+                        if not self._same_match(page.url, base_match_url):
+                            warnings.append(f"Stats {period.replace('_', ' ')} control navigated outside the selected match; ignored.")
+                            page.goto(stats_url, wait_until="domcontentloaded")
+                            page.wait_for_timeout(350)
+                            found = True
+                            break
+                        item = self._capture_page(page, None, f"stats_{period}", f"Stats period: {label}")
+                        item["period"] = period
+                        captured.append(item)
+                        found = True
+                        # Restore the known Stats URL before trying the next period.
+                        page.goto(stats_url, wait_until="domcontentloaded")
+                        page.wait_for_timeout(300)
+                        break
+                    except Exception as exc:
+                        warnings.append(f"Stats {period.replace('_', ' ')} control failed: {type(exc).__name__}")
+                if found:
+                    break
+            if not found:
+                warnings.append(f"No explicit {period.replace('_', ' ')} selector found on the Stats page.")
+        return captured, warnings
 
     def _capture_page(self, page: Any, response: Any, page_type: str, link_label: str) -> dict[str, Any]:
         # Some tabs hydrate after DOMContentLoaded. A short, bounded settling
@@ -1257,6 +1310,11 @@ class SoccerwayAdapter:
                             match["home_score"], match["away_score"] = int(score.group(1)), int(score.group(2))
                             break
         stats: dict[str, dict[str, str]] = {}
+        stats_by_period: dict[str, dict[str, dict[str, str]]] = {
+            "full_match": {},
+            "first_half": {},
+            "second_half": {},
+        }
         lineups: list[dict[str, str]] = []
         events: list[dict[str, str]] = []
         players: list[dict[str, str]] = []
@@ -1268,7 +1326,15 @@ class SoccerwayAdapter:
             "unassigned_visible_history_rows": [],
         }
         for item in pages:
-            stats.update(item.get("statistics") or {})
+            page_type = item.get("page_type")
+            page_stats = item.get("statistics") or {}
+            if page_type == "stats_first_half":
+                stats_by_period["first_half"].update(page_stats)
+            elif page_type == "stats_second_half":
+                stats_by_period["second_half"].update(page_stats)
+            elif page_type == "stats":
+                stats.update(page_stats)
+                stats_by_period["full_match"].update(page_stats)
             for key in ("home_team_last_matches", "away_team_last_matches", "team_form", "h2h_meetings"):
                 section = (item.get("history_sections") or {}).get(key) or {}
                 if section.get("heading") and not history[key]["heading"]:
@@ -1306,6 +1372,7 @@ class SoccerwayAdapter:
         return {
             "match": match,
             "statistics": stats,
+            "statistics_by_period": stats_by_period,
             "lineups": lineups,
             "events": event_items[:100],
             "player_links": deduped_players[:120],

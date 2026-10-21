@@ -289,7 +289,179 @@ class SoccerwayAdapter:
         ordered = [found[k] for k, _ in KNOWN_ROUTES if k in found]
         return ordered
 
+    def collect_fixtures_for_date(self, url: str, *, max_fixtures: int = FIXTURE_LINK_LIMIT) -> dict[str, Any]:
+        """Collect a date's complete accessible fixture list, preserving visible competition groups."""
+        list_url = self.validate_match_list_url(url)
+        try:
+            from playwright.sync_api import sync_playwright
+        except ImportError as exc:
+            raise RuntimeError(
+                "The Soccerway adapter requires Playwright. Run 'python -m pip install playwright' "
+                "and 'python -m playwright install chromium'."
+            ) from exc
+
+        warnings: list[str] = []
+        errors: list[str] = []
+        fixtures: list[dict[str, Any]] = []
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(headless=self.headless)
+            context = browser.new_context(locale="en-GB")
+            page = context.new_page()
+            page.set_default_timeout(self.timeout_ms)
+            try:
+                response = page.goto(list_url, wait_until="domcontentloaded")
+                page.wait_for_timeout(600)
+                status = response.status if response else None
+                body = ""
+                try:
+                    body = page.locator("body").inner_text(timeout=self.timeout_ms)
+                except Exception:
+                    pass
+                blocked = status in {403, 429} or any(
+                    token in (page.title() + "\n" + body[:10000]).lower()
+                    for token in ("verify you are human", "checking your browser", "captcha", "access denied", "unusual traffic")
+                )
+                if blocked:
+                    return {
+                        "agent": "data_collection", "adapter": self.name, "source": "Soccerway",
+                        "source_url": list_url, "captured_at": utc_now(), "records": [],
+                        "records_collected": 0, "status": "blocked",
+                        "errors": [], "warnings": ["Fixture-list collection stopped on access denial/challenge; no bypass attempted."],
+                        "authority": self.authority,
+                    }
+                fixtures = self._extract_fixture_rows(page, list_url, max_fixtures=max_fixtures)
+                if not fixtures:
+                    warnings.append("No structured fixture links were extracted. Check date/list page and the current page DOM.")
+                if status is not None and status >= 400:
+                    errors.append(f"Fixture listing returned HTTP {status}.")
+                page_snapshot = {
+                    "page_type": "fixture_list",
+                    "source_url": page.url,
+                    "captured_at": utc_now(),
+                    "http_status": status,
+                    "title": page.title(),
+                    "body_text": body[:TEXT_LIMIT],
+                    "fixtures": fixtures,
+                    "fixture_count": len(fixtures),
+                }
+            except Exception as exc:
+                errors.append(f"Fixture-list collection failed: {type(exc).__name__}: {exc}")
+                page_snapshot = {"page_type":"fixture_list","source_url":list_url,"captured_at":utc_now(),"fixtures":[]}
+            finally:
+                context.close()
+                browser.close()
+
+        captured_at = utc_now()
+        digest = hashlib.sha256(f"{list_url}|{json.dumps(fixtures,sort_keys=True)}".encode()).hexdigest()
+        record = {
+            "record_id": digest,
+            "source": "Soccerway",
+            "source_url": list_url,
+            "captured_at": captured_at,
+            "facts": {
+                "fixture_date": parse_qs(urlparse(list_url).query).get("date", [None])[0],
+                "fixture_count": len(fixtures),
+            },
+            "fixtures": fixtures,
+            "raw_payload": {"page": page_snapshot, "warnings": warnings},
+        }
+        return {
+            "agent": "data_collection", "adapter": self.name, "source": "Soccerway",
+            "source_url": list_url, "captured_at": captured_at, "records": [record],
+            "fixtures": fixtures, "records_collected": 1,
+            "fixture_count": len(fixtures),
+            "status": "success" if fixtures else ("partial" if not errors else "failed"),
+            "errors": errors, "warnings": warnings, "authority": self.authority,
+        }
+
+    @staticmethod
+    def _extract_fixture_rows(page: Any, source_url: str, *, max_fixtures: int = FIXTURE_LINK_LIMIT) -> list[dict[str, Any]]:
+        fixtures: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        current_competition: str | None = None
+        # Work through semantic match links and visible row/card containers; the link target,
+        # not a guessed URL, becomes the selected fixture's canonical entry point.
+        selectors = (
+            "a[href*='/match/']",
+            "a[href*='/game/']",
+        )
+        for selector in selectors:
+            links = page.locator(selector)
+            for index in range(min(links.count(), max_fixtures * 4)):
+                node = links.nth(index)
+                try:
+                    href = (node.get_attribute("href") or "").strip()
+                    absolute = urljoin(source_url, href)
+                    if not SoccerwayAdapter._is_match_url(absolute):
+                        continue
+                    canonical = SoccerwayAdapter.validate_url(absolute)
+                    if canonical in seen:
+                        continue
+                    label = re.sub(r"\s+", " ", (node.inner_text(timeout=500) or "").strip())
+                    if not label:
+                        continue
+                    seen.add(canonical)
+                    container = None
+                    for ancestor_selector in ("xpath=ancestor::tr[1]", "xpath=ancestor::*[@data-testid][1]", "xpath=ancestor::div[1]"):
+                        try:
+                            candidate = node.locator(ancestor_selector)
+                            value = re.sub(r"\s+", " ", (candidate.inner_text(timeout=450) or "").strip())
+                            if value and len(value) < 1200:
+                                container = value
+                                break
+                        except Exception:
+                            continue
+                    competition = None
+                    if container:
+                        possible = re.search(
+                            r"(.{0,100}(?:Premier League|Champions League|Europa League|Conference League|Serie A|LaLiga|Bundesliga|Ligue 1|NPFL|Cup|League).{0,60})",
+                            container, re.I
+                        )
+                        if possible:
+                            competition = re.sub(r"\s+", " ", possible.group(1)).strip(" -|")
+                    if competition:
+                        current_competition = competition
+                    pair = SoccerwayAdapter._teams_from_title(label)
+                    home_team, away_team = pair if pair else (None, None)
+                    # Many fixture-list links render only one team. Try the nearest row/card text as the pair.
+                    full_line = container or label
+                    if not (home_team and away_team):
+                        candidate_pair = re.search(r"(.+?)\s+(?:v|vs\.?|versus|-)\s+(.+?)(?:\s+\d{1,2}:\d{2}|\s+\d+\s*[-–]\s*\d+|$)", full_line, re.I)
+                        if candidate_pair:
+                            home_team = candidate_pair.group(1).strip(" -|")
+                            away_team = candidate_pair.group(2).strip(" -|")
+                    kickoff_match = re.search(r"\b(\d{1,2}:\d{2})\b", full_line)
+                    score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", full_line)
+                    status = next((value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled") if re.search(r"\b"+re.escape(value)+r"\b", full_line, re.I)), None)
+                    fixtures.append({
+                        "source": "Soccerway",
+                        "source_url": canonical,
+                        "page_identity": "/".join([part for part in urlparse(canonical).path.split("/") if part][:3]),
+                        "competition": competition or current_competition,
+                        "home_team": home_team,
+                        "away_team": away_team,
+                        "kickoff_display": kickoff_match.group(1) if kickoff_match else None,
+                        "score": {"home": int(score_match.group(1)), "away": int(score_match.group(2))} if score_match else None,
+                        "status": status,
+                        "visible_text": full_line[:1000],
+                    })
+                    if len(fixtures) >= max_fixtures:
+                        return fixtures
+                except Exception:
+                    continue
+        return fixtures
+
+    @staticmethod
+    def _is_match_url(url: str) -> bool:
+        parsed = urlparse(url)
+        host = (parsed.hostname or "").lower()
+        path = [part for part in parsed.path.split("/") if part]
+        return (parsed.scheme in {"http","https"}
+                and (host == "soccerway.com" or host.endswith(".soccerway.com"))
+                and len(path) >= 3 and path[0].lower() in {"match","game"})
+
     def collect(self, url: str) -> dict[str, Any]:
+        """Collect selected fixture detail pages and the expanded history panels on H2H."""
         base_url = self.validate_url(url)
         try:
             from playwright.sync_api import sync_playwright
@@ -367,7 +539,11 @@ class SoccerwayAdapter:
                 browser.close()
 
         aggregate = self._aggregate(pages, base_url)
-        captured_at = utc_now()
+        h2h_page = next((item for item in pages if item.get("page_type") == "h2h"), None)
+        history_clicks = {"team_form": 0, "h2h_meetings": 0, "unknown": 0}
+        if h2h_page is not None:
+            # Only report click evidence captured while collecting the visible H2H page.
+            history_clicks = h2h_page.get("history_expansion", {}).get("clicks", history_clicks)
         raw_payload = {
             "adapter": self.name,
             "page_types_seen": [x["page_type"] for x in pages],
@@ -377,6 +553,7 @@ class SoccerwayAdapter:
             "events": aggregate["events"],
             "player_links": aggregate["player_links"],
             "missing_fields": aggregate["missing_fields"],
+            "history_expansion": history_clicks,
             "warnings": warnings,
         }
         facts = {k: v for k, v in aggregate["match"].items() if v not in (None, "", [], {})}
@@ -389,12 +566,12 @@ class SoccerwayAdapter:
             "adapter": self.name,
             "source": "Soccerway",
             "source_url": base_url,
-            "captured_at": captured_at,
+            "captured_at": utc_now(),
             "records": [{
                 "record_id": record_id,
                 "source": "Soccerway",
                 "source_url": base_url,
-                "captured_at": captured_at,
+                "captured_at": utc_now(),
                 "facts": facts,
                 "raw_payload": raw_payload,
             }] if pages else [],

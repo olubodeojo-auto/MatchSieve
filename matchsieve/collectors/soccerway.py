@@ -832,40 +832,68 @@ class SoccerwayAdapter:
 
     @staticmethod
     def _history_section_rows(page: Any, page_type: str) -> dict[str, Any]:
-        """Return separate H2H and team-form rows from explicit headings and nearby tables."""
+        """Extract team form and direct H2H rows separately when DOM boundaries are clear."""
         sections: dict[str, Any] = {
             "team_form": {"heading": None, "rows": [], "target_rows": TEAM_FORM_TARGET},
             "h2h_meetings": {"heading": None, "rows": [], "target_rows": H2H_TARGET},
+            "unassigned_visible_history_rows": [],
         }
         if page_type != "h2h":
             return sections
 
-        # Identify headings explicitly; then associate the nearest following result table.
         heading_nodes = page.locator("h1,h2,h3,h4,[role='heading']")
         for i in range(min(heading_nodes.count(), 100)):
             heading = heading_nodes.nth(i)
             try:
                 label = re.sub(r"\s+", " ", (heading.inner_text(timeout=350) or "").strip())
-                kind = SoccerwayAdapter._label_kind(label)
-                if kind not in {"team_form", "h2h_meetings"}:
+                key = SoccerwayAdapter._label_kind(label)
+                if key not in {"team_form", "h2h_meetings"}:
                     continue
-                key = kind
                 if sections[key]["heading"] is None:
                     sections[key]["heading"] = label
-                # Prefer a table in the same nearest ancestor containing this heading.
-                container = heading.locator("xpath=ancestor::*[self::section or self::article or @class][1]")
-                tables = container.locator("table")
-                rows: list[dict[str, Any]] = []
-                for table_index in range(min(tables.count(), 8)):
+
+                chosen_container = None
+                # Inspect increasingly broad ancestors. Only use a container with tables
+                # and a clear label for one history kind; if it wraps both histories, skip it.
+                for depth in range(1, 9):
+                    try:
+                        ancestor = heading.locator(f"xpath=ancestor::*[{depth}]")
+                        ancestor_text = re.sub(r"\s+", " ", (ancestor.inner_text(timeout=350) or "")).strip().lower()
+                        if not ancestor_text or len(ancestor_text) > 12_000:
+                            continue
+                        has_team_label = any(term in ancestor_text for term in (
+                            "last matches", "previous matches", "recent matches", "home form", "away form", "recent form"
+                        ))
+                        has_h2h_label = any(term in ancestor_text for term in (
+                            "last meetings", "previous meetings", "head-to-head", "head to head", "direct meetings", "previous encounters"
+                        ))
+                        if key == "team_form" and has_h2h_label:
+                            continue
+                        if key == "h2h_meetings" and has_team_label:
+                            continue
+                        tables = ancestor.locator("table")
+                        if tables.count():
+                            chosen_container = ancestor
+                            break
+                    except Exception:
+                        continue
+
+                if chosen_container is None:
+                    continue
+
+                local_rows: list[dict[str, Any]] = []
+                tables = chosen_container.locator("table")
+                max_rows = TEAM_FORM_TARGET if key == "team_form" else H2H_TARGET
+                for table_index in range(min(tables.count(), 5)):
                     table = tables.nth(table_index)
                     trs = table.locator("tr")
-                    for row_index in range(min(trs.count(), TEAM_FORM_TARGET + H2H_TARGET + 10)):
-                        tr = trs.nth(row_index)
+                    for row_index in range(min(trs.count(), max_rows + 3)):
                         try:
+                            tr = trs.nth(row_index)
                             cells = [re.sub(r"\s+", " ", cell.strip()) for cell in tr.locator("th,td").all_inner_texts()]
                             cells = [cell for cell in cells if cell]
                             if len(cells) >= 3:
-                                rows.append({
+                                local_rows.append({
                                     "cells": cells[:12],
                                     "text": " | ".join(cells)[:600],
                                     "section": key,
@@ -873,19 +901,19 @@ class SoccerwayAdapter:
                                 })
                         except Exception:
                             continue
-                # Keep only bounded displayed rows for this labelled section; do not synthesize missing games.
-                if rows:
-                    existing = sections[key]["rows"]
-                    seen = {row["text"] for row in existing}
-                    sections[key]["rows"].extend(row for row in rows if row["text"] not in seen)
+
+                seen = {row.get("text") for row in sections[key]["rows"]}
+                for row in local_rows:
+                    if row.get("text") not in seen and len(sections[key]["rows"]) < max_rows:
+                        sections[key]["rows"].append(row)
+                        seen.add(row.get("text"))
             except Exception:
                 continue
 
-        # Fallback: retain all match-like H2H table rows, separately labelled as unassigned
-        # rather than guessing whether they are team form or direct meetings.
+        # If boundaries cannot be established, retain visible rows as unassigned evidence.
+        # They must not be silently treated as direct meetings or team form.
         if not sections["team_form"]["rows"] and not sections["h2h_meetings"]["rows"]:
             tables = page.locator("table")
-            unassigned: list[dict[str, Any]] = []
             for table_index in range(min(tables.count(), 20)):
                 trs = tables.nth(table_index).locator("tr")
                 for row_index in range(min(trs.count(), TEAM_FORM_TARGET + H2H_TARGET + 10)):
@@ -894,10 +922,13 @@ class SoccerwayAdapter:
                         cells = [re.sub(r"\s+", " ", cell.strip()) for cell in tr.locator("th,td").all_inner_texts()]
                         cells = [cell for cell in cells if cell]
                         if len(cells) >= 3:
-                            unassigned.append({"cells": cells[:12], "text": " | ".join(cells)[:600], "section": "unassigned"})
+                            sections["unassigned_visible_history_rows"].append({
+                                "cells": cells[:12],
+                                "text": " | ".join(cells)[:600],
+                                "section": "unassigned",
+                            })
                     except Exception:
                         continue
-            sections["unassigned_visible_history_rows"] = unassigned
         return sections
 
     @staticmethod

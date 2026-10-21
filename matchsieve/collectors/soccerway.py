@@ -418,28 +418,44 @@ class SoccerwayAdapter:
                                 break
                         except Exception:
                             continue
-                    competition = None
-                    if container:
-                        possible = re.search(
-                            r"(.{0,100}(?:Premier League|Champions League|Europa League|Conference League|Serie A|LaLiga|Bundesliga|Ligue 1|NPFL|Cup|League).{0,60})",
-                            container, re.I
-                        )
-                        if possible:
-                            competition = re.sub(r"\s+", " ", possible.group(1)).strip(" -|")
-                    if competition:
-                        current_competition = competition
+                    # Prefer the closest row/card with the two teams; do not trust a generic page-level ancestor.
+                    full_line = container or label
                     pair = SoccerwayAdapter._teams_from_title(label)
                     home_team, away_team = pair if pair else (None, None)
-                    # Many fixture-list links render only one team. Try the nearest row/card text as the pair.
-                    full_line = container or label
                     if not (home_team and away_team):
-                        candidate_pair = re.search(r"(.+?)\s+(?:v|vs\.?|versus|-)\s+(.+?)(?:\s+\d{1,2}:\d{2}|\s+\d+\s*[-–]\s*\d+|$)", full_line, re.I)
+                        candidate_pair = re.search(
+                            r"(.{1,100}?)\s+(?:v|vs\.?|versus)\s+(.{1,100}?)(?=\s+\d{1,2}:\d{2}|\s+\d+\s*[-–]\s*\d+|\s+(?:Live|Full-time|Finished|Scheduled|Half-time)\b|$)",
+                            full_line, re.I
+                        )
                         if candidate_pair:
                             home_team = candidate_pair.group(1).strip(" -|")
                             away_team = candidate_pair.group(2).strip(" -|")
+                    if not (home_team and away_team):
+                        team_links = node.locator("xpath=ancestor::tr[1]//a[contains(@href,'/team/')]")
+                        try:
+                            team_names = []
+                            for team_index in range(min(team_links.count(), 2)):
+                                team_names.append(re.sub(r"\s+", " ", (team_links.nth(team_index).inner_text(timeout=350) or "").strip()))
+                            if len(team_names) == 2:
+                                home_team, away_team = team_names
+                        except Exception:
+                            pass
                     kickoff_match = re.search(r"\b(\d{1,2}:\d{2})\b", full_line)
                     score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", full_line)
                     status = next((value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled") if re.search(r"\b"+re.escape(value)+r"\b", full_line, re.I)), None)
+                    # Only treat a short competition label as a competition; don't infer it from a page-wide ancestor.
+                    competition = None
+                    if container:
+                        possible = re.search(
+                            r"\b(Premier League|Champions League|Europa League|Conference League|Serie A|LaLiga|Bundesliga|Ligue 1|NPFL|[^|\n]{1,70}\b(?:Cup|League)\b)\b",
+                            full_line, re.I
+                        )
+                        if possible:
+                            competition = re.sub(r"\s+", " ", possible.group(1)).strip(" -|")
+                    score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", full_line)
+                    status = next((value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled") if re.search(r"\b"+re.escape(value)+r"\b", full_line, re.I)), None)
+                    if not (home_team and away_team):
+                        continue
                     fixtures.append({
                         "source": "Soccerway",
                         "source_url": canonical,

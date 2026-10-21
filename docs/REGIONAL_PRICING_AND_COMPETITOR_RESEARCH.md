@@ -72,3 +72,37 @@ Competitor sources:
 - https://esurebet.com/pricing
 
 Competitor pricing pages generally do not disclose reliable active users, paid subscriber counts or audited revenue. Do not invent these numbers; use filings, credible interviews or independently sourced traffic estimates and label what each metric measures.
+
+
+## Additional country-level competitor evidence checked on 21 October 2026
+
+These are public claims and published prices. A competitor's own member count is not an audited active-user metric.
+
+| Country / market | Competitor evidence found | Implication for MatchSieve |
+|---|---|---|
+| Nigeria | KiqStat advertises NGN 5,000/month for Pro. eSureBet displays NGN 2,000/3 days, NGN 5,000/week and NGN 16,000/month. EC Predicts claims 12,000+ members and lists premium tiers, but its displayed pricing is high relative to a low-cost research tripwire. Pokotips claims 3,500+ subscribers and lists NGN 3,499/month. | A tiny one-time report pack could reduce commitment versus subscriptions, but ₦300 must be judged against processor fees and report-generation cost. |
+| Ghana | StatPulse AI lists GH₵70/7 days, GH₵200/30 days, GH₵400 Pro and GH₵1,000 Verdict. NOVA247 lists GHS 120, 250 and 450/month. Football Platform lists GH₵15/week or GH₵30/month. | Market pricing varies sharply by positioning; a small credit pack is a different value proposition from VIP tips. Do not benchmark only against the highest tier. |
+| Kenya | Sokastar lists KES 250 for a daily package and KES 50/40/80 for selected daily products. WekaTips lists KES 70 for one day, KES 150 for seven days, and SMS products from KES 50/day. Football Platform lists KES 250/week and KES 500/month. | Daily access is an established packaging pattern. A KES 20 two-credit pack is a lower-priced experiment, not proven demand. |
+| Uganda | Football Platform lists UGX 4,800/week and UGX 9,600/month. No second strong, transparently priced local competitor was verified in this pass. | Treat Uganda as a later small cohort; test payment method success and repeat behaviour before expanding. |
+| US / Canada | Football Prediction AI publishes USD 9.99/month or USD 59.99/year. It is a global offer, not a verified country-local benchmark. No strong Canada-specific price and subscriber count were verified in this pass. | Use local currency and a separately measured cohort. Do not assume USD pricing translates directly into Canadian willingness to pay. |
+| UAE / Dubai | No strong UAE-specific competitor with transparent local pricing and credible audience figures was verified in this pass. | Do not infer UAE willingness to pay from UK or US prices; test only after payment and marketing review. |
+| UK / EU | PIQSmart publishes GBP 7.50 first month then GBP 14.99/month and a GBP 60 season offer; Football Platform publishes GBP 0.99/week or GBP 1.99/month; SportsKinetic publishes GBP 9.99/month or GBP 39.99/year. Football Platform lists selected Eurozone prices. | There is a broad price range. Our entry product should sell a clearly bounded research outcome, not claim to match a full prediction subscription. |
+
+### Audience size and revenue claims
+
+- EC Predicts publicly claims 12,000+ members; Pokotips publicly claims 3,500+ subscribers. These are self-reported marketing claims, not independently verified monthly active users or paid subscribers.
+- The other pricing pages reviewed did not disclose credible paid-user counts or audited revenue. No traffic estimate is substituted for paying users.
+- A reliable competitor-revenue estimate cannot be derived from list price multiplied by a claimed audience because plan mix, churn, discounts, free accounts and payment success are unknown.
+
+### Updated sources
+
+- KiqStat: https://www.kiqstat.app/
+- EC Predicts: https://ecpredicts.com/
+- Pokotips: https://pokotips.com/membership/registration
+- StatPulse AI: https://statpulseai.com/
+- NOVA247 Tech: https://nova247.tech/pricing
+- Sokastar: https://sokastar.com/
+- WekaTips: https://www.wekatips.co.ke/
+- Sportverified: https://www.sportverified.com/pricing.php
+- Football Platform: https://footballplatform.com/become-a-member/
+- Football Prediction AI: https://www.footballprediction.ai/pricing

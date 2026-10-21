@@ -657,11 +657,10 @@ class SoccerwayAdapter:
                                 warnings.append(f"Tab unavailable (HTTP {status}): {candidate}")
                                 continue
                             history_expansion = self._expand_history_panels(page, item["page_type"])
-                            if item["page_type"] == "h2h":
-                                warnings.extend(history_expansion.get("warnings", []))
                             captured = self._capture_page(page, response, item["page_type"], item["link_label"])
                             captured["history_expansion"] = history_expansion
-                            warnings.extend(history_expansion.get("warnings", []))
+                            if item["page_type"] == "h2h":
+                                warnings.extend(history_expansion.get("warnings", []))
                             if captured["access_blocked"]:
                                 blocked = True
                                 warnings.append("A challenge/access-control page was detected; collection stopped.")
@@ -679,7 +678,7 @@ class SoccerwayAdapter:
 
         aggregate = self._aggregate(pages, base_url)
         h2h_page = next((item for item in pages if item.get("page_type") == "h2h"), None)
-        history_clicks = {"team_form": 0, "h2h_meetings": 0, "unknown": 0}
+        history_clicks = {"home_team_last_matches": 0, "away_team_last_matches": 0, "team_form": 0, "h2h_meetings": 0, "unclassified": 0}
         if h2h_page is not None:
             # Only report click evidence captured while collecting the visible H2H page.
             history_clicks = h2h_page.get("history_expansion", {}).get("clicks", history_clicks)
@@ -906,29 +905,49 @@ class SoccerwayAdapter:
 
     @staticmethod
     def _history_section_rows(page: Any, page_type: str) -> dict[str, Any]:
-        """Extract team form and direct H2H rows separately when DOM boundaries are clear."""
+        """Separate each side's recent matches from direct H2H meetings where boundaries are clear."""
+        empty = lambda target: {"heading": None, "rows": [], "target_rows": target}
         sections: dict[str, Any] = {
-            "team_form": {"heading": None, "rows": [], "target_rows": TEAM_FORM_TARGET},
-            "h2h_meetings": {"heading": None, "rows": [], "target_rows": H2H_TARGET},
+            "home_team_last_matches": empty(TEAM_FORM_TARGET),
+            "away_team_last_matches": empty(TEAM_FORM_TARGET),
+            "team_form": empty(TEAM_FORM_TARGET),
+            "h2h_meetings": empty(H2H_TARGET),
             "unassigned_visible_history_rows": [],
         }
         if page_type != "h2h":
             return sections
+
+        home_team = away_team = ""
+        try:
+            pair = SoccerwayAdapter._teams_from_title(page.title() or "")
+            if pair:
+                home_team, away_team = pair[0].lower(), pair[1].lower()
+        except Exception:
+            pass
 
         heading_nodes = page.locator("h1,h2,h3,h4,[role='heading']")
         for i in range(min(heading_nodes.count(), 100)):
             heading = heading_nodes.nth(i)
             try:
                 label = re.sub(r"\s+", " ", (heading.inner_text(timeout=350) or "").strip())
-                key = SoccerwayAdapter._label_kind(label)
-                if key not in {"team_form", "h2h_meetings"}:
+                initial_kind = SoccerwayAdapter._label_kind(label)
+                if initial_kind not in {"team_form", "h2h_meetings"}:
                     continue
-                if sections[key]["heading"] is None:
-                    sections[key]["heading"] = label
+
+                chosen_key = initial_kind
+                label_lower = label.lower()
+                if initial_kind == "team_form":
+                    has_home = bool(home_team and home_team in label_lower)
+                    has_away = bool(away_team and away_team in label_lower)
+                    if has_home and not has_away:
+                        chosen_key = "home_team_last_matches"
+                    elif has_away and not has_home:
+                        chosen_key = "away_team_last_matches"
+
+                if sections[chosen_key]["heading"] is None:
+                    sections[chosen_key]["heading"] = label
 
                 chosen_container = None
-                # Inspect increasingly broad ancestors. Only use a container with tables
-                # and a clear label for one history kind; if it wraps both histories, skip it.
                 for depth in range(1, 9):
                     try:
                         ancestor = heading.locator(f"xpath=ancestor::*[{depth}]")
@@ -941,23 +960,34 @@ class SoccerwayAdapter:
                         has_h2h_label = any(term in ancestor_text for term in (
                             "last meetings", "previous meetings", "head-to-head", "head to head", "direct meetings", "previous encounters"
                         ))
-                        if key == "team_form" and has_h2h_label:
-                            continue
-                        if key == "h2h_meetings" and has_team_label:
-                            continue
+                        if chosen_key in {"home_team_last_matches", "away_team_last_matches", "team_form"}:
+                            if has_h2h_label:
+                                continue
+                            if not has_team_label and initial_kind != "team_form":
+                                continue
+                            has_home = bool(home_team and home_team in ancestor_text)
+                            has_away = bool(away_team and away_team in ancestor_text)
+                            if has_home and not has_away:
+                                chosen_key = "home_team_last_matches"
+                            elif has_away and not has_home:
+                                chosen_key = "away_team_last_matches"
+                        elif chosen_key == "h2h_meetings":
+                            if has_team_label:
+                                continue
+                            if not has_h2h_label and initial_kind != "h2h_meetings":
+                                continue
                         tables = ancestor.locator("table")
                         if tables.count():
                             chosen_container = ancestor
                             break
                     except Exception:
                         continue
-
                 if chosen_container is None:
                     continue
 
+                max_rows = H2H_TARGET if chosen_key == "h2h_meetings" else TEAM_FORM_TARGET
                 local_rows: list[dict[str, Any]] = []
                 tables = chosen_container.locator("table")
-                max_rows = TEAM_FORM_TARGET if key == "team_form" else H2H_TARGET
                 for table_index in range(min(tables.count(), 5)):
                     table = tables.nth(table_index)
                     trs = table.locator("tr")
@@ -970,27 +1000,28 @@ class SoccerwayAdapter:
                                 local_rows.append({
                                     "cells": cells[:12],
                                     "text": " | ".join(cells)[:600],
-                                    "section": key,
+                                    "section": chosen_key,
                                     "source_heading": label,
                                 })
                         except Exception:
                             continue
 
-                seen = {row.get("text") for row in sections[key]["rows"]}
+                existing = {row.get("text") for row in sections[chosen_key]["rows"]}
                 for row in local_rows:
-                    if row.get("text") not in seen and len(sections[key]["rows"]) < max_rows:
-                        sections[key]["rows"].append(row)
-                        seen.add(row.get("text"))
+                    if row.get("text") not in existing and len(sections[chosen_key]["rows"]) < max_rows:
+                        sections[chosen_key]["rows"].append(row)
+                        existing.add(row.get("text"))
             except Exception:
                 continue
 
-        # If boundaries cannot be established, retain visible rows as unassigned evidence.
-        # They must not be silently treated as direct meetings or team form.
-        if not sections["team_form"]["rows"] and not sections["h2h_meetings"]["rows"]:
+        # When headings are absent/ambiguous, preserve visible rows without guessing their meaning.
+        if not any(sections[key]["rows"] for key in (
+            "home_team_last_matches", "away_team_last_matches", "team_form", "h2h_meetings"
+        )):
             tables = page.locator("table")
             for table_index in range(min(tables.count(), 20)):
                 trs = tables.nth(table_index).locator("tr")
-                for row_index in range(min(trs.count(), TEAM_FORM_TARGET + H2H_TARGET + 10)):
+                for row_index in range(min(trs.count(), TEAM_FORM_TARGET * 2 + H2H_TARGET + 10)):
                     try:
                         tr = trs.nth(row_index)
                         cells = [re.sub(r"\s+", " ", cell.strip()) for cell in tr.locator("th,td").all_inner_texts()]
@@ -1177,13 +1208,15 @@ class SoccerwayAdapter:
         events: list[dict[str, str]] = []
         players: list[dict[str, str]] = []
         history = {
+            "home_team_last_matches": {"heading": None, "rows": [], "target_rows": TEAM_FORM_TARGET},
+            "away_team_last_matches": {"heading": None, "rows": [], "target_rows": TEAM_FORM_TARGET},
             "team_form": {"heading": None, "rows": [], "target_rows": TEAM_FORM_TARGET},
             "h2h_meetings": {"heading": None, "rows": [], "target_rows": H2H_TARGET},
             "unassigned_visible_history_rows": [],
         }
         for item in pages:
             stats.update(item.get("statistics") or {})
-            for key in ("team_form", "h2h_meetings"):
+            for key in ("home_team_last_matches", "away_team_last_matches", "team_form", "h2h_meetings"):
                 section = (item.get("history_sections") or {}).get(key) or {}
                 if section.get("heading") and not history[key]["heading"]:
                     history[key]["heading"] = section["heading"]

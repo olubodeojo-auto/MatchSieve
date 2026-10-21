@@ -1,56 +1,107 @@
 from __future__ import annotations
+
+import os
 from typing import Any
+
 from .config import ENABLED_PROVIDERS
-from .providers.catalog import list_providers
-from .providers.sportscore import SportScoreProvider
-from .providers.openligadb import OpenLigaDBProvider
-from .providers.football_data_org import FootballDataOrgProvider
-from .repository import Repository
-from .normalise import utc_now
 from .db import connect
+from .kb_writer import refresh_indexes
+from .normalise import utc_now
+from .providers.api_football import ApiFootballProvider
+from .providers.additional_sources import FootballDataIOProvider, LiveFootballProvider, SportMonksProvider
+from .providers.base import ProviderError
+from .providers.catalog import list_providers
+from .providers.football_data_org import FootballDataOrgProvider
+from .providers.openligadb import OpenLigaDBProvider
+from .providers.sportscore import SportScoreProvider
+from .providers.thesportsdb import TheSportsDBProvider
+from .repository import Repository
+
 
 class ProviderManager:
-    """Explicit execution only: never silently fan out to every configured source."""
-    def __init__(self, repo: Repository | None=None): self.repo=repo or Repository()
+    """Fetch only the source explicitly named by the caller and archive provenance."""
 
-    def catalog(self) -> list[dict[str,Any]]:
-        configured=set(ENABLED_PROVIDERS)
-        return [{**p,"enabled":p['key'] in configured} for p in list_providers()]
+    def __init__(self, repo: Repository | None = None):
+        self.repo = repo or Repository()
 
-    def fetch(self, provider: str, **kwargs: Any) -> dict[str,Any]:
-        started=utc_now(); records=[]; status='failed'; message=''; source_key=provider.lower()
-        adapters={"sportscore":SportScoreProvider(),"openligadb":OpenLigaDBProvider(),"football_data_org":FootballDataOrgProvider()}
-        conn=connect(self.repo.db_path)
-        run_id=None
+    def catalog(self) -> list[dict[str, Any]]:
+        configured = set(ENABLED_PROVIDERS)
+        rows = []
+        for provider in list_providers():
+            key = provider["key"]
+            env_key = provider.get("env_key")
+            has_credential = not env_key or bool(os.getenv(env_key, "").strip())
+            rows.append({**provider, "enabled": key in configured or has_credential})
+        return rows
+
+    def fetch(self, provider: str, **kwargs: Any) -> dict[str, Any]:
+        source_key = provider.strip().lower()
+        adapters = {
+            "api_football": ApiFootballProvider(),
+            "sportmonks": SportMonksProvider(),
+            "footballdata_io": FootballDataIOProvider(),
+            "livefootball": LiveFootballProvider(),
+            "thesportsdb": TheSportsDBProvider(),
+            "sportscore": SportScoreProvider(),
+            "openligadb": OpenLigaDBProvider(),
+            "football_data_org": FootballDataOrgProvider(),
+        }
+        started = utc_now()
+        conn = connect(self.repo.db_path)
         try:
-            cur=conn.execute("INSERT INTO provider_runs(provider_key,started_at,status,metadata_json) VALUES(?,?,?,?)",(source_key,started,'running','{}'))
-            run_id=int(cur.lastrowid); conn.commit()
-        finally: conn.close()
+            cur = conn.execute(
+                "INSERT INTO provider_runs(provider_key,started_at,status,metadata_json) VALUES(?,?,?,?)",
+                (source_key, started, "running", "{}"),
+            )
+            run_id = int(cur.lastrowid)
+            conn.commit()
+        finally:
+            conn.close()
+
+        records: list[dict[str, Any]] = []
+        status = "failed"
+        message = ""
         try:
-            if source_key not in ENABLED_PROVIDERS:
-                raise RuntimeError(f"Provider '{source_key}' is not enabled. Add it to MATCHSIEVE_ENABLED_PROVIDERS in .env deliberately after reviewing cost and coverage.")
-            if source_key not in adapters:
-                raise RuntimeError(f"'{source_key}' is catalogued but has no verified adapter in this build; see docs/PROVIDERS.md.")
-            if source_key=='sportscore': rows=adapters[source_key].fetch_fixtures(**kwargs)
-            elif source_key=='openligadb': rows=adapters[source_key].fetch_fixtures(**kwargs)
-            else: rows=adapters[source_key].fetch_fixtures(**kwargs)
+            adapter = adapters.get(source_key)
+            if adapter is None:
+                raise ProviderError(f"No current live adapter is registered for '{source_key}'.")
+            rows = adapter.fetch_fixtures(**kwargs)
             for row in rows:
-                ref=row.get('source_ref') or f"provider:{source_key}"
-                self.repo.add_fixture(row,source_key=source_key,source_ref=ref,source_url=row.get('source_url'),raw_payload=row.get('provider_payload',row))
+                source_ref = str(row.get("external_id") or f"provider:{source_key}")
+                self.repo.add_fixture(
+                    row,
+                    source_key=source_key,
+                    source_ref=source_ref,
+                    source_url=row.get("source_url"),
+                    raw_payload=row.get("provider_payload", row),
+                )
                 records.append(row)
-            status='success'; message=f"Fetched {len(records)} record(s). Review the stored source snapshots and fixture coverage."
+            status = "success" if records else "empty"
+            if records:
+                message = f"Received {len(records)} fixture record(s) from {source_key}; records were archived with source provenance."
+            else:
+                message = f"{source_key} returned no usable fixture records for the requested date or range; this is not counted as a successful intake."
             try:
-                from .kb_writer import refresh_indexes
                 kb_index = refresh_indexes(self.repo)
             except Exception as exc:
-                kb_index = {"warning": str(exc)}
-            return {"provider":source_key,"status":status,"records_received":len(records),"message":message,"knowledge_base":kb_index}
+                kb_index = {"warning": type(exc).__name__}
+            return {
+                "provider": source_key,
+                "status": status,
+                "records_received": len(records),
+                "message": message,
+                "knowledge_base": kb_index,
+            }
         except Exception as exc:
-            message=str(exc)
-            return {"provider":source_key,"status":"failed","records_received":len(records),"message":message}
+            message = str(exc)
+            return {"provider": source_key, "status": "failed", "records_received": len(records), "message": message}
         finally:
-            conn=connect(self.repo.db_path)
+            conn = connect(self.repo.db_path)
             try:
-                conn.execute("UPDATE provider_runs SET finished_at=?,status=?,records_received=?,message=? WHERE id=?",(utc_now(),status,len(records),message,run_id))
+                conn.execute(
+                    "UPDATE provider_runs SET finished_at=?,status=?,records_received=?,message=? WHERE id=?",
+                    (utc_now(), status, len(records), message, run_id),
+                )
                 conn.commit()
-            finally: conn.close()
+            finally:
+                conn.close()

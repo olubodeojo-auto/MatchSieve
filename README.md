@@ -24,13 +24,18 @@ python run.py serve
 
 Open `http://127.0.0.1:8765`. Keep the server bound to loopback for local development; do not expose it publicly as-is.
 
-To run the offline test suite:
+To fetch fixtures from a configured provider and archive source provenance (run from the repository root):
 
 ```powershell
-python -m compileall -q .
-python -m unittest discover -s tests -v
-node --check web/app.js
+python scripts/live_fetch.py --provider api_football
+python scripts/live_fetch.py --provider thesportsdb
+python scripts/live_fetch.py --provider sportmonks
+python scripts/live_fetch.py --provider footballdata_io
+python scripts/live_fetch.py --provider livefootball
+python scripts/live_fetch.py --provider sportscore
 ```
+
+The fetch script sets its own repository import path; `PYTHONPATH` should not be required. Provider calls use the local `.env`; never paste API keys into commands or commit `.env`. A successful HTTP response is not enough by itself: record counts and field mapping must be checked before treating a source as research-grade.
 
 ## Development priorities
 

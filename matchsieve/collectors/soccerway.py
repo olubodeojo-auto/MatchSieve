@@ -143,64 +143,102 @@ class SoccerwayAdapter:
     @staticmethod
     def _label_kind(label: str) -> str | None:
         value = re.sub(r"\s+", " ", (label or "")).strip().lower()
-        if any(word in value for word in ("home form", "home & away", "overall", "last matches", "previous matches")):
-            return "team_form"
-        if any(word in value for word in ("last meetings", "previous meetings", "head-to-head", "head to head", "h2h")):
+        team_form_patterns = (
+            "home form", "away form", "home & away", "overall", "last matches",
+            "previous matches", "recent matches", "last games", "recent form",
+        )
+        h2h_patterns = (
+            "last meetings", "previous meetings", "head-to-head", "head to head",
+            "h2h meetings", "direct meetings", "previous encounters",
+        )
+        # Classify a clear section before broad "show more" controls.
+        if any(word in value for word in h2h_patterns):
             return "h2h_meetings"
-        if any(word in value for word in ("show more", "load more", "more matches", "view more")):
+        if any(word in value for word in team_form_patterns):
+            return "team_form"
+        if any(word in value for word in ("show more", "load more", "more matches", "view more", "see more")):
             return "expand_history"
         return None
 
     @staticmethod
-    def _is_expand_control(node: Any) -> bool:
+    def _expand_control_text(node: Any) -> str:
+        parts = []
+        for attribute in ("aria-label", "title", "data-testid", "data-qa"):
+            try:
+                value = node.get_attribute(attribute)
+                if value:
+                    parts.append(value)
+            except Exception:
+                pass
         try:
-            label = " ".join(filter(None, [
-                node.inner_text(timeout=350),
-                node.get_attribute("aria-label") or "",
-                node.get_attribute("title") or "",
-                node.get_attribute("data-testid") or "",
-            ])).lower()
-            return SoccerwayAdapter._label_kind(label) == "expand_history"
+            value = node.inner_text(timeout=350)
+            if value:
+                parts.append(value)
         except Exception:
-            return False
+            pass
+        return re.sub(r"\s+", " ", " ".join(parts)).strip().lower()
+
+    @classmethod
+    def _expand_control_section_kind(cls, node: Any) -> str | None:
+        """Classify a load-more control by its nearest containing history section."""
+        # Walk upward from the button. Stop at the closest ancestor with one clear
+        # history label; if an ancestor contains both sections, do not guess.
+        for depth in range(1, 9):
+            try:
+                ancestor = node.locator(f"xpath=ancestor::*[{depth}]")
+                text_value = re.sub(r"\s+", " ", (ancestor.inner_text(timeout=350) or "")).strip().lower()
+                if not text_value or len(text_value) > 10_000:
+                    continue
+                has_team = any(word in text_value for word in ("last matches", "previous matches", "recent matches", "home form", "away form", "recent form"))
+                has_h2h = any(word in text_value for word in ("last meetings", "previous meetings", "head-to-head", "head to head", "direct meetings", "previous encounters"))
+                if has_team and not has_h2h:
+                    return "team_form"
+                if has_h2h and not has_team:
+                    return "h2h_meetings"
+            except Exception:
+                continue
+        return None
 
     @classmethod
     def _expand_history_panels(cls, page: Any, page_type: str, max_clicks: int = HISTORY_EXPANSION_CLICKS) -> dict[str, Any]:
-        """Expand visible team-form and H2H panels only through explicit UI controls."""
-        clicks = {"team_form": 0, "h2h_meetings": 0, "unknown": 0}
+        """Expand team-form and direct-meeting sections separately, up to four times each."""
+        clicks = {"team_form": 0, "h2h_meetings": 0, "unclassified": 0}
         warnings: list[str] = []
         if page_type != "h2h":
             return {"clicks": clicks, "warnings": warnings}
-        for _ in range(max(0, min(int(max_clicks), HISTORY_EXPANSION_CLICKS))):
-            clicked = False
-            # Buttons first, then links, summary controls. Never click arbitrary interactive elements.
-            for selector in ("button", "a", "[role='button']", "summary"):
-                nodes = page.locator(selector)
-                for index in range(min(nodes.count(), 500)):
-                    node = nodes.nth(index)
-                    if not cls._is_expand_control(node):
-                        continue
-                    try:
-                        label = " ".join(filter(None, [
-                            node.inner_text(timeout=350),
-                            node.get_attribute("aria-label") or "",
-                            node.get_attribute("title") or "",
-                        ])).lower()
-                        kind = cls._label_kind(label) or "unknown"
-                        node.scroll_into_view_if_needed(timeout=800)
-                        node.click(timeout=1000)
-                        page.wait_for_timeout(250)
-                        clicks[kind] = clicks.get(kind, 0) + 1
-                        clicked = True
+
+        targets = ("team_form", "h2h_meetings")
+        for target in targets:
+            for _ in range(max(0, min(int(max_clicks), HISTORY_EXPANSION_CLICKS))):
+                clicked = False
+                for selector in ("button", "a", "[role='button']", "summary"):
+                    nodes = page.locator(selector)
+                    for index in range(min(nodes.count(), 500)):
+                        node = nodes.nth(index)
+                        label = cls._expand_control_text(node)
+                        if cls._label_kind(label) != "expand_history":
+                            continue
+                        section_kind = cls._expand_control_section_kind(node)
+                        if section_kind != target:
+                            continue
+                        try:
+                            node.scroll_into_view_if_needed(timeout=800)
+                            node.click(timeout=1000)
+                            page.wait_for_timeout(350)
+                            clicks[target] += 1
+                            clicked = True
+                            break
+                        except Exception as exc:
+                            warnings.append(f"{target} expand control did not open: {type(exc).__name__}")
+                    if clicked:
                         break
-                    except Exception as exc:
-                        warnings.append(f"History expand control did not open: {type(exc).__name__}")
-                if clicked:
+                if not clicked:
                     break
-            if not clicked:
-                break
-        if not any(clicks.values()):
-            warnings.append("No accessible history expand control was found; extracted history may be limited.")
+
+        if clicks["team_form"] == 0:
+            warnings.append("No section-specific team-form expansion was verified; available form history may be limited.")
+        if clicks["h2h_meetings"] == 0:
+            warnings.append("No section-specific direct-meetings expansion was verified; available H2H history may be limited.")
         return {"clicks": clicks, "warnings": warnings}
 
     @staticmethod

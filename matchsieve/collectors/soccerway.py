@@ -26,7 +26,6 @@ FIXTURE_LINK_LIMIT = 500
 TEAM_FORM_TARGET = 30
 H2H_TARGET = 15
 HISTORY_EXPANSION_CLICKS = 4
-DAY_LIST_ROUTE_CANDIDATES = ("matches/", "matches/")
 KNOWN_ROUTES: tuple[tuple[str, str], ...] = (
     ("summary", ""),
     ("report", "report/"),

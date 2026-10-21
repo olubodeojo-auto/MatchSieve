@@ -373,7 +373,14 @@ class SoccerwayAdapter:
             page.set_default_timeout(self.timeout_ms)
             try:
                 response = page.goto(list_url, wait_until="domcontentloaded")
-                page.wait_for_timeout(600)
+                try:
+                    page.locator("a[href*='/match/'], a[href*='/game/']").first.wait_for(
+                        state="attached", timeout=min(self.timeout_ms, 6500)
+                    )
+                except Exception:
+                    # Some match-list dates genuinely have no fixtures; continue to capture
+                    # the visible page and report the gap rather than guessing.
+                    page.wait_for_timeout(500)
                 status = response.status if response else None
                 body = ""
                 try:

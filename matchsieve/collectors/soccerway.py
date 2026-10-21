@@ -597,6 +597,10 @@ class SoccerwayAdapter:
             if not (home_team and away_team):
                 # No reliable team pair: don't create a misleading fixture object.
                 continue
+            # Preserve each canonical fixture link only once, even if nested duplicate
+            # anchors are rendered in more than one place inside the selected row.
+            if any(item["source_url"] == canonical for item in fixtures):
+                continue
 
             kickoff_match = re.search(r"\b(\d{1,2}:\d{2})\b", row_text)
             score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", row_text)

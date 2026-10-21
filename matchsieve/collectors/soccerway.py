@@ -399,7 +399,40 @@ class SoccerwayAdapter:
                         "errors": [], "warnings": ["Fixture-list collection stopped on access denial/challenge; no bypass attempted."],
                         "authority": self.authority,
                     }
-                fixtures = self._extract_fixture_rows(page, list_url, max_fixtures=max_fixtures)
+                # Prefer the actual match-list content region so unrelated footer/sidebar
+                # "Matches" and "Live Scores" links are not mistaken for this day's fixtures.
+                list_scope = page
+                list_scope_name = "full-page fallback"
+                for scope_selector in ("main", "#mc", "[role='main']"):
+                    try:
+                        candidate_scope = page.locator(scope_selector).first
+                        if candidate_scope.count() and candidate_scope.locator("a[href*='/match/'],a[href*='/game/']").count():
+                            list_scope = candidate_scope
+                            list_scope_name = scope_selector
+                            break
+                    except Exception:
+                        continue
+                if list_scope_name == "full-page fallback":
+                    warnings.append("No clear main match-list container was identified; footer/sidebar filtering is applied as a fallback.")
+
+                # Bounded scrolling allows pages that lazy-load more of the daily list to render.
+                stable_counts = 0
+                previous_count = -1
+                for _ in range(20):
+                    try:
+                        current_count = list_scope.locator("a[href*='/match/'],a[href*='/game/']").count()
+                        if current_count == previous_count:
+                            stable_counts += 1
+                        else:
+                            stable_counts = 0
+                        previous_count = current_count
+                        if stable_counts >= 2 or current_count >= max_fixtures * 4:
+                            break
+                        page.evaluate("window.scrollBy(0, Math.max(500, window.innerHeight * 0.8))")
+                        page.wait_for_timeout(350)
+                    except Exception:
+                        break
+                fixtures = self._extract_fixture_rows(list_scope, list_url, max_fixtures=max_fixtures)
                 if not fixtures:
                     warnings.append("No structured fixture links were extracted. Check date/list page and the current page DOM.")
                 if status is not None and status >= 400:
@@ -454,6 +487,19 @@ class SoccerwayAdapter:
             for index in range(min(links.count(), max_fixtures * 8)):
                 node = links.nth(index)
                 try:
+                    if page is None:
+                        continue
+                    # Footer and navigation recommendations are not the selected date's fixture list.
+                    in_non_fixture_region = False
+                    for excluded in ("xpath=ancestor::footer[1]", "xpath=ancestor::nav[1]", "xpath=ancestor::aside[1]"):
+                        try:
+                            if node.locator(excluded).count():
+                                in_non_fixture_region = True
+                                break
+                        except Exception:
+                            pass
+                    if in_non_fixture_region:
+                        continue
                     href = (node.get_attribute("href") or "").strip()
                     absolute = urljoin(source_url, href)
                     if not SoccerwayAdapter._is_match_url(absolute):

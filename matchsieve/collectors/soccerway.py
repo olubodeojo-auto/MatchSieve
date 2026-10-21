@@ -59,6 +59,8 @@ DOM_SELECTOR_GROUPS = {
         ".away-team a[href*='/team/']",
     ),
     "team_names": ("[class*='team-name' i]", "[data-testid*='team-name' i]"),
+    "home_score": ("[data-testid*='home-score' i]", "[class*='home-score' i]", "[class*='homeScore' i]"),
+    "away_score": ("[data-testid*='away-score' i]", "[class*='away-score' i]", "[class*='awayScore' i]"),
     "score": ("[data-testid*='score' i]", "[class*='score' i]", "[class*='result' i]"),
     "kickoff": ("time[datetime]", "[data-testid*='kickoff' i]", "[class*='kickoff' i]", "[class*='match-date' i]"),
     "competition": (
@@ -605,12 +607,21 @@ class SoccerwayAdapter:
                 venues = dom.get("venue") or []
                 if venues:
                     match["venue"] = venues[0]["value"]
+            for score_field in ("home_score", "away_score"):
+                if match.get(score_field) is None:
+                    for candidate in (dom.get(score_field) or []):
+                        score_value = re.fullmatch(r"\s*(\d{1,2})\s*", candidate["value"])
+                        if score_value:
+                            match[score_field] = int(score_value.group(1))
+                            break
             if match.get("home_score") is None or match.get("away_score") is None:
                 for candidate in (dom.get("score") or []):
                     score = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", candidate["value"])
                     if score:
-                        match["home_score"], match["away_score"] = int(score.group(1)), int(score.group(2))
-                        break
+                        match.setdefault("home_score", int(score.group(1)))
+                        match.setdefault("away_score", int(score.group(2)))
+                        if match.get("home_score") is not None and match.get("away_score") is not None:
+                            break
             if not match.get("kickoff"):
                 kickoff = re.search(
                     r"\b(\d{1,2}[./-]\d{1,2}[./-]\d{4}(?:\s+\d{1,2}:\d{2})?)\b",

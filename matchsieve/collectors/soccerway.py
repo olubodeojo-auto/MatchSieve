@@ -550,7 +550,7 @@ class SoccerwayAdapter:
                     location = value.get("location")
                     if isinstance(location, dict) and location.get("name"):
                         output.setdefault("venue", location["name"])
-                    league = value.get("superEvent") or value.get("organizer")
+                    league = value.get("superEvent")
                     if isinstance(league, dict) and league.get("name"):
                         output.setdefault("competition", league["name"])
                 for nested in value.values():

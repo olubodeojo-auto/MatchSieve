@@ -8,6 +8,7 @@ from .db import connect
 from .kb_writer import refresh_indexes
 from .normalise import utc_now
 from .providers.api_football import ApiFootballProvider
+from .providers.additional_sources import FootballDataIOProvider, LiveFootballProvider, SportMonksProvider
 from .providers.base import ProviderError
 from .providers.catalog import list_providers
 from .providers.football_data_org import FootballDataOrgProvider
@@ -37,6 +38,9 @@ class ProviderManager:
         source_key = provider.strip().lower()
         adapters = {
             "api_football": ApiFootballProvider(),
+            "sportmonks": SportMonksProvider(),
+            "footballdata_io": FootballDataIOProvider(),
+            "livefootball": LiveFootballProvider(),
             "thesportsdb": TheSportsDBProvider(),
             "sportscore": SportScoreProvider(),
             "openligadb": OpenLigaDBProvider(),

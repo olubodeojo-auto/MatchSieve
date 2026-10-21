@@ -42,6 +42,18 @@ def _team(value: Any) -> str | None:
     return None
 
 
+def _scalar(value: Any) -> str | int | float | None:
+    """Convert nested provider metadata to a SQLite-safe scalar."""
+    if value is None or isinstance(value, (str, int, float)):
+        return value
+    if isinstance(value, dict):
+        for key in ("name", "year", "id", "value", "season"):
+            candidate = value.get(key)
+            if isinstance(candidate, (str, int, float)):
+                return candidate
+    return None
+
+
 def _normalise(row: dict[str, Any], source: str) -> dict[str, Any] | None:
     home = _team(row.get("home_team") or row.get("homeTeam") or row.get("home") or row.get("localteam") or row.get("participant_home"))
     away = _team(row.get("away_team") or row.get("awayTeam") or row.get("away") or row.get("visitorteam") or row.get("participant_away"))
@@ -56,14 +68,17 @@ def _normalise(row: dict[str, Any], source: str) -> dict[str, Any] | None:
         "footballdata_io": "https://footballdata.io/",
         "livefootball": "https://live-football-api.com/",
     }
+    status_value = row.get("status") or row.get("state") or "scheduled"
+    if isinstance(status_value, dict):
+        status_value = status_value.get("name") or status_value.get("short_name") or status_value.get("state") or "scheduled"
     result: dict[str, Any] = {
-        "external_id": row.get("id") or row.get("fixture_id") or row.get("match_id") or row.get("event_id"),
+        "external_id": _scalar(row.get("id") or row.get("fixture_id") or row.get("match_id") or row.get("event_id")),
         "competition": str(competition),
-        "season": row.get("season"),
+        "season": _scalar(row.get("season")),
         "kickoff_utc": str(kickoff),
         "home_team": home,
         "away_team": away,
-        "status": str(row.get("status") or row.get("state") or "scheduled").lower(),
+        "status": str(status_value).lower(),
         "source_key": source,
         "source_url": source_urls[source],
         "quality_label": "source-reported-unreviewed",

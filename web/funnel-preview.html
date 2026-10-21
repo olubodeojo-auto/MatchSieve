@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17241d">
+<meta name="description" content="MatchSieve sales-funnel preview: customer-first football research messaging, offer ladder and lead journey. Preview only; forms and payments are not connected.">
+<title>MatchSieve — Funnel Preview</title>
+<style>
+:root{--ink:#17241d;--ink2:#26372d;--muted:#67766d;--paper:#f6f7f1;--card:#fffefb;--line:#dfe5da;--lime:#c9f06a;--sage:#dfe9d5;--green:#537844;--alert:#fff4d6;--shadow:0 18px 55px rgba(23,36,29,.09)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font:inherit}
+button,a{cursor:pointer}
+a{color:inherit}
+.preview-banner{background:#fff0cb;border-bottom:1px solid #eedca6;padding:10px 18px;text-align:center;color:#68501a;font-size:11px;font-weight:800;letter-spacing:.035em}
+.shell{max-width:1180px;margin:0 auto;padding:0 26px}
+.topbar{display:flex;gap:20px;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;min-width:170px}
+.brand-mark{display:grid;grid-template-columns:repeat(2,10px);gap:3px;transform:rotate(-7deg)}
+.brand-mark i{width:10px;height:10px;display:block;background:var(--green);border-radius:3px}
+.brand-mark i:nth-child(2),.brand-mark i:nth-child(3){background:#a0bb76}
+.brand strong{display:block;font-size:18px;letter-spacing:-.6px}
+.brand small{display:block;margin-top:2px;color:var(--muted);font-size:8px;letter-spacing:1.55px;font-weight:850}
+.topnav{display:flex;gap:21px;align-items:center;font-size:11px;color:#53645a}
+.topnav a{text-decoration:none}
+.topnav a:hover{color:var(--green)}
+.small-pill{border:1px solid var(--line);border-radius:99px;padding:8px 10px;background:#fffefb;color:#63736a;font-size:9px;font-weight:850;letter-spacing:.08em;white-space:nowrap}
+.preview-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:13px 0 0}
+.preview-tools span{color:var(--muted);font-size:10px;font-weight:800;margin-right:3px}
+.stage-button{background:transparent;border:1px solid transparent;border-radius:8px;padding:8px 10px;color:#65746a;font-size:10px;font-weight:750}
+.stage-button:hover{border-color:var(--line);background:white}
+.stage-button.active{background:var(--ink);color:white}
+.content{padding:0 0 70px}
+.hero{display:grid;grid-template-columns:1.08fr .92fr;gap:46px;align-items:center;padding:58px 0 52px}
+.eyebrow{font-size:10px;letter-spacing:1.7px;text-transform:uppercase;font-weight:900;color:var(--green);margin:0 0 15px}
+.eyebrow:before{content:"";display:inline-block;background:#91b75f;height:2px;width:21px;margin:0 9px 3px 0}
+h1{font-size:clamp(39px,5.5vw,68px);line-height:.99;letter-spacing:-3.9px;margin:0 0 22px;font-weight:850;max-width:690px}
+h1 em{font-family:Georgia,serif;font-weight:400;color:var(--green);letter-spacing:-3.2px}
+.lede{font-size:15px;line-height:1.8;color:#516158;margin:0;max-width:630px}
+.actions{display:flex;gap:11px;align-items:center;flex-wrap:wrap;margin-top:25px}
+.btn{border:1px solid var(--ink);border-radius:9px;background:var(--ink);color:#f7faef;padding:13px 16px;font-size:11px;font-weight:850;display:inline-flex;align-items:center;justify-content:center;gap:18px;text-decoration:none;transition:.15s}
+.btn:hover{background:#2d4837;transform:translateY(-1px)}
+.btn .arrow{font-size:18px;color:var(--lime);font-weight:400}
+.btn.secondary{background:transparent;color:var(--ink);border-color:#cbd5c8}
+.btn.secondary:hover{background:#fff}
+.disclaimer{font-size:10px;line-height:1.65;color:#77847a;margin-top:13px}
+.hero-proof{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px;color:#52645a;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.065em}
+.hero-proof span:before{content:"✓";display:inline-grid;place-items:center;width:16px;height:16px;margin-right:6px;background:#e0ead6;color:#3d6934;border-radius:50%;font-size:10px}
+.report-demo{position:relative;background:#17241d;color:#f7faef;border-radius:20px;padding:22px;box-shadow:var(--shadow);overflow:hidden;isolation:isolate}
+.report-demo:before{content:"";position:absolute;width:290px;height:290px;border:1px solid rgba(201,240,106,.2);border-radius:50%;right:-94px;top:-120px;z-index:-1}
+.report-top{display:flex;justify-content:space-between;align-items:start;gap:12px;border-bottom:1px solid rgba(255,255,255,.13);padding-bottom:17px}
+.report-top small{display:block;color:#a9b5a6;font-size:8px;letter-spacing:1.5px;font-weight:850}
+.report-top strong{display:block;font-size:16px;margin-top:8px}
+.mock-status{font-size:8px;font-weight:900;letter-spacing:.08em;border:1px solid rgba(201,240,106,.44);color:var(--lime);padding:7px 8px;border-radius:6px}
+.fixture-line{display:flex;align-items:center;gap:12px;margin:20px 0}
+.club{flex:1;background:#26382d;border:1px solid #35483a;border-radius:10px;padding:13px 8px;text-align:center;font-size:11px;font-weight:850}
+.versus{font-size:9px;color:#8f9e90;font-weight:800}
+.mock-label{font-size:9px;color:#b8c4b5;letter-spacing:.1em;font-weight:850;text-transform:uppercase;margin:17px 0 9px}
+.signal{display:flex;align-items:center;gap:9px;background:#22352a;border:1px solid #354b39;padding:11px;border-radius:9px;margin-top:8px;font-size:10px;color:#e1ead9}
+.signal b{display:grid;place-items:center;width:21px;height:21px;border-radius:6px;background:#344f37;color:var(--lime);font-size:12px}
+.signal.counter b{background:#554032;color:#ffd4a7}
+.gap-note{margin-top:13px;padding:12px;border-left:2px solid #d3a76d;background:#302b22;color:#e5d3b6;font-size:10px;line-height:1.65}
+.mock-footer{display:flex;justify-content:space-between;gap:12px;color:#819084;font-size:8px;margin-top:17px}
+.section{padding:46px 0;border-top:1px solid var(--line)}
+.section-head{display:flex;justify-content:space-between;align-items:end;gap:25px;margin-bottom:22px}
+.section-head h2{font-size:clamp(25px,3vw,38px);letter-spacing:-1.8px;margin:0;line-height:1.08}
+.section-head p{color:var(--muted);font-size:12px;line-height:1.7;margin:10px 0 0;max-width:620px}
+.kicker{color:var(--green);font-size:9px;font-weight:900;letter-spacing:1.6px;margin:0 0 11px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card-number{color:#6e8a58;font-size:10px;font-weight:900;letter-spacing:.1em}
+.card h3{font-size:16px;margin:13px 0 9px;letter-spacing:-.4px}
+.card p{font-size:11px;line-height:1.7;color:#66746a;margin:0}
+.card .micro{font-size:9px;color:#879187;margin-top:13px}
+.persona-card{padding:19px;background:#fffefb;border:1px solid var(--line);border-radius:13px}
+.persona-card.active{border-color:#6f9356;box-shadow:0 0 0 2px rgba(111,147,86,.12)}
+.persona-card button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:0;color:inherit}
+.persona-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.persona-tag{background:#e6eedf;color:#3f613b;border-radius:4px;padding:6px 7px;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.persona-card h3{margin:12px 0 7px;font-size:15px}
+.persona-card p{font-size:11px;line-height:1.7;color:#69766c;margin:0}
+.persona-cta{display:inline-block;margin-top:13px;color:#476e38;font-weight:850;font-size:10px}
+.price-toolbar{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.price-toolbar label{display:flex;align-items:center;gap:10px;font-size:11px;color:#526158;font-weight:800}
+select,input{border:1px solid #d4ddd1;background:white;border-radius:8px;padding:11px 12px;color:var(--ink);outline:none}
+select:focus,input:focus{border-color:#709758;box-shadow:0 0 0 3px rgba(112,151,88,.13)}
+.price-disclaimer{font-size:10px;line-height:1.6;color:#7c877d;max-width:500px}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;align-items:stretch}
+.price-card{background:#fffefb;border:1px solid var(--line);border-radius:15px;padding:22px;display:flex;flex-direction:column;min-height:300px;position:relative}
+.price-card.featured{border:1.5px solid #6d8e53;box-shadow:0 10px 34px rgba(48,83,46,.09)}
+.plan-tag{font-size:8px;font-weight:900;letter-spacing:.1em;color:#5d7950;text-transform:uppercase}
+.price-card h3{font-size:16px;margin:12px 0 7px}
+.price-card .desc{font-size:10px;line-height:1.65;color:#69776c;min-height:34px}
+.price{font-size:35px;letter-spacing:-1.8px;font-weight:850;margin:15px 0 2px}
+.price span{font-size:10px;letter-spacing:0;color:#7d887d;font-weight:700}
+.price-card ul{padding-left:16px;margin:13px 0 22px;font-size:10px;line-height:1.9;color:#5b695e}
+.price-card .btn{margin-top:auto;width:100%}
+.future-note{font-size:9px;line-height:1.6;color:#7e887c;margin-top:10px}
+.bottom-cta{background:#e6eddf;border-radius:17px;padding:28px;display:flex;justify-content:space-between;align-items:center;gap:23px}
+.bottom-cta h2{margin:0 0 8px;font-size:25px;letter-spacing:-1px}
+.bottom-cta p{margin:0;color:#5b6a5d;font-size:11px;line-height:1.7;max-width:620px}
+.page-panel{max-width:820px;margin:48px auto 0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(22px,5vw,46px);box-shadow:var(--shadow)}
+.page-panel h1{font-size:clamp(32px,4vw,49px);letter-spacing:-2.2px;line-height:1.04;margin:0 0 14px}
+.page-panel .lede{font-size:13px}
+.steps{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 28px}
+.steps span{border:1px solid var(--line);border-radius:99px;padding:8px 10px;color:#78847a;font-size:9px;font-weight:800}
+.steps span.current{background:var(--ink);border-color:var(--ink);color:white}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:25px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field.wide{grid-column:1/-1}
+.field label{font-size:10px;font-weight:850;color:#45564a}
+.field small{font-size:9px;color:#7c887d;line-height:1.5}
+.form-grid input,.form-grid select{width:100%;min-width:0}
+.consent{display:flex;gap:9px;align-items:flex-start;color:#657369;font-size:10px;line-height:1.6;margin-top:18px}
+.consent input{margin-top:3px}
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.notice{border:1px solid #eadfb9;background:#fff8df;color:#70581f;padding:12px 14px;border-radius:9px;font-size:10px;line-height:1.65;margin-top:20px}
+.success-mark{display:grid;place-items:center;width:47px;height:47px;border-radius:14px;background:#e0ecd5;color:#42713b;font-size:22px;margin-bottom:23px}
+.state-list{padding:0;margin:23px 0;list-style:none;display:grid;gap:11px}
+.state-list li{display:flex;gap:9px;font-size:11px;line-height:1.6;color:#56665b}
+.state-list li:before{content:"✓";display:grid;place-items:center;flex-shrink:0;width:18px;height:18px;border-radius:50%;background:#e4edde;color:#446b39;font-weight:900;font-size:10px}
+.status-chip{display:inline-block;padding:7px 9px;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:.08em;background:#e0ecd6;color:#3f6837;text-transform:uppercase}
+.status-chip.pending{background:#fff0c9;color:#83621d}
+.status-chip.failed{background:#f8e1dc;color:#9b4438}
+.community-choice{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px}
+.community-choice strong{font-size:11px;display:block}
+.community-choice small{font-size:9px;display:block;color:#79847b;line-height:1.5;margin-top:4px}
+.community-choice button{border:1px solid #cfd9c8;background:#fff;border-radius:7px;padding:9px 11px;font-size:9px;font-weight:800;white-space:nowrap}
+.footnote{border-top:1px solid var(--line);padding:22px 0 30px;color:#879187;font-size:9px;line-height:1.7}
+.footnote a{color:#637762}
+.hidden{display:none!important}
+@media(max-width:900px){.hero{grid-template-columns:1fr;gap:30px;padding-top:42px}.hero-art{max-width:650px;width:100%;margin:0 auto}.topnav{display:none}.grid3,.price-grid{grid-template-columns:1fr}.price-card{min-height:0}.card{padding:18px}.section-head{align-items:start;flex-direction:column}.bottom-cta{align-items:flex-start;flex-direction:column}}
+@media(max-width:540px){.shell{padding:0 16px}.topbar{padding:17px 0}.small-pill{display:none}.preview-tools{overflow-x:auto;flex-wrap:nowrap}.stage-button{white-space:nowrap}.hero{padding:38px 0}.hero-proof{gap:8px}.report-demo{padding:17px}.fixture-line{gap:7px}.club{padding:12px 5px;font-size:9px}.form-grid{grid-template-columns:1fr}.field.wide{grid-column:auto}.price{font-size:31px}.bottom-cta{padding:21px}.page-panel{margin-top:28px;padding:22px}.actions .btn{width:100%;justify-content:space-between}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="preview-banner">FUNNEL DESIGN PREVIEW · FOR REVIEW ONLY · NO EMAILS ARE SENT · NO PAYMENTS ARE TAKEN · PRICES ARE HYPOTHESES</div>
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="#" id="homeLink" aria-label="MatchSieve funnel preview home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span><strong>MatchSieve</strong><small>FOOTBALL INTELLIGENCE</small></span>
+    </a>
+    <nav class="topnav" aria-label="Page navigation">
+      <a href="#how">How it works</a><a href="#personas">Who it's for</a><a href="#plans">Plans preview</a>
+    </nav>
+    <span class="small-pill">DEMO MODE</span>
+  </header>
+  <nav class="preview-tools" aria-label="Preview each funnel page">
+    <span>PREVIEW PAGE:</span>
+    <button class="stage-button active" data-stage="landing" type="button">Landing</button>
+    <button class="stage-button" data-stage="optin" type="button">Opt-in</button>
+    <button class="stage-button" data-stage="lead-thanks" type="button">Lead thanks</button>
+    <button class="stage-button" data-stage="offer" type="button">Offer</button>
+    <button class="stage-button" data-stage="checkout" type="button">Checkout</button>
+    <button class="stage-button" data-stage="paid-thanks" type="button">Paid thanks</button>
+    <button class="stage-button" data-stage="pending" type="button">Payment pending</button>
+    <button class="stage-button" data-stage="failed" type="button">Payment failed</button>
+  </nav>
+  <main id="screen" class="content" tabindex="-1"></main>
+  <footer class="footnote">
+    MatchSieve is a football research aid, not a sportsbook or a promise of an outcome. No data is sent from this preview. Before launch, connect real form delivery, compliant payment processing, authenticated entitlements, consent records and approved community workflows. Market-specific product and advertising review remains required.
+  </footer>
+</div>
+<script>
+(function(){
+'use strict';
+var screen=document.getElementById('screen');
+var stage='landing';
+var persona='A';
+var country='UK';
+var attribution={source:'direct / not supplied',campaign:'not supplied'};
+var qp=new URLSearchParams(window.location.search);
+if(qp.get('utm_source'))attribution.source=qp.get('utm_source');
+if(qp.get('utm_campaign'))attribution.campaign=qp.get('utm_campaign');
+if(['A','B','C'].indexOf(qp.get('persona'))!==-1)persona=qp.get('persona');
+if(['UK','US','CA','EU','NG','GH','KE'].indexOf(qp.get('country'))!==-1)country=qp.get('country');
+
+var messages={
+ A:{tag:'FOR THE WEEKEND ANALYST',title:'One match. One market question. <em>The evidence in one place.</em>',copy:'Stop stitching together scattered stats. Choose the fixture and market you are researching; see the available evidence, what challenges it, where information came from and what is missing.',cta:'Get the free research checklist',reason:'You want a clearer research process without opening and reconciling a stack of pages.'},
+ B:{tag:'FOR THE CRITICAL COMPARATOR',title:'More opinions are not the same as <em>more evidence.</em>',copy:'Inspect what supports a football-market argument, what pushes back and what remains unknown. MatchSieve is designed to make reasoning easier to inspect—not to ask you to trust a pick on faith.',cta:'Inspect the research method',reason:'You want evidence you can inspect, not another confident claim with no source trail.'},
+ C:{tag:'FOR THE FOOTBALL PUBLISHER',title:'Research the match. Keep the sources. <em>Make the argument yours.</em>',copy:'Start with a structured fixture-and-market research brief. Review evidence on both sides and retain source notes before writing your own preview, show notes or community discussion.',cta:'Get the publisher checklist',reason:'You repeat football research every week and need a more consistent starting point.'}
+};
+var currency={
+ UK:{label:'United Kingdom · pilot market',currency:'GBP',trip:'£2.99',core:'£7.99',publisher:'£19',launch:true},
+ US:{label:'United States · later market',currency:'USD',trip:'Not set',core:'Not set',publisher:'Not set',launch:false},
+ CA:{label:'Canada · later market',currency:'CAD',trip:'Not set',core:'Not set',publisher:'Not set',launch:false},
+ EU:{label:'Selected Europe · later market',currency:'EUR',trip:'Not set',core:'Not set',publisher:'Not set',launch:false},
+ NG:{label:'Nigeria · separate market test',currency:'NGN',trip:'Not set',core:'Not set',publisher:'Not set',launch:false},
+ GH:{label:'Ghana · separate market test',currency:'GHS',trip:'Not set',core:'Not set',publisher:'Not set',launch:false},
+ KE:{label:'Kenya · separate market test',currency:'KES',trip:'Not set',core:'Not set',publisher:'Not set',launch:false}
+};
+function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function button(label,action,secondary){return '<button type="button" class="btn '+(secondary?'secondary':'')+'" data-action="'+esc(action)+'">'+esc(label)+(secondary?'':' <span class="arrow" aria-hidden="true">↗</span>')+'</button>';}
+function steps(current){var items=[['landing','Discover'],['optin','Opt in'],['lead-thanks','Deliver'],['offer','Choose'],['checkout','Pay'],['paid-thanks','Access']];return '<div class="steps">'+items.map(function(x){return '<span class="'+(x[0]===current?'current':'')+'">'+esc(x[1])+'</span>';}).join('')+'</div>';}
+function personaCards(){var data=[['A','WEEKEND ANALYST','Less tab-juggling; a clearer report for the market already being researched.'],['B','CRITICAL COMPARATOR','Inspect supporting signals, counter-evidence and what remains unknown.'],['C','FOOTBALL PUBLISHER','Use a repeatable research base and check sources before writing.']];return '<div class="grid3">'+data.map(function(d){return '<article class="persona-card '+(persona===d[0]?'active':'')+'"><button data-action="persona-'+d[0]+'" type="button" aria-pressed="'+(persona===d[0])+'"><span class="persona-head"><span class="persona-tag">Persona '+d[0]+'</span><span aria-hidden="true">↗</span></span><h3>'+d[1]+'</h3><p>'+d[2]+'</p><span class="persona-cta">View this message →</span></button></article>';}).join('')+'</div>';}
+function reportPreview(){return '<aside class="report-demo" aria-label="Illustrative research report layout, not live data"><div class="report-top"><div><small>MARKET RESEARCH BRIEF · UI PREVIEW</small><strong>Selected fixture + market</strong></div><span class="mock-status">DEMO LAYOUT</span></div><div class="fixture-line"><div class="club">Home team</div><span class="versus">VS</span><div class="club">Away team</div></div><div class="mock-label">Supporting evidence</div><div class="signal"><b>+</b><span>Relevant evidence present in the selected data window</span></div><div class="mock-label">What challenges the idea</div><div class="signal counter"><b>−</b><span>Counter-signals shown separately, not hidden</span></div><div class="gap-note"><strong>What is missing</strong><br>Unavailable or stale inputs are called out. No fabricated statistics or confidence percentage.</div><div class="mock-footer"><span>SOURCES AND DATES</span><span>NO LIVE MATCH DATA</span></div></aside>';}
+function planPrices(){var p=currency[country];return '<div class="price-toolbar"><label for="countrySelect">Market preview <select id="countrySelect">'+[['UK','United Kingdom'],['US','United States'],['CA','Canada'],['EU','Selected Europe'],['NG','Nigeria'],['GH','Ghana'],['KE','Kenya']].map(function(v){return '<option value="'+v[0]+'" '+(country===v[0]?'selected':'')+'>'+v[1]+'</option>';}).join('')+'</select></label><p class="price-disclaimer">'+(p.launch?'UK price hypotheses only. Not connected to checkout.':'This market is not open for paid launch. We will validate data coverage, billing, tax and customer demand before setting a price.')+'</p></div><div class="price-grid"><article class="price-card"><span class="plan-tag">ONE-OFF · TEST OFFER</span><h3>Weekend Research Pack</h3><p class="desc">For an occasional user who wants to try a few research briefs before subscribing.</p><div class="price">'+(p.launch?p.trip:'Price not set')+' <span>one time</span></div><ul><li>Proposed 3 report credits</li><li>No automatic subscription</li><li>Same honest evidence and limitation labels</li></ul>'+button('Preview one-off offer','offer',true)+'</article><article class="price-card featured"><span class="plan-tag">CORE · FIRST TEST</span><h3>Researcher</h3><p class="desc">For regular match research across a defined supported competition set.</p><div class="price">'+(p.launch?p.core:'Price not set')+' <span>/ month</span></div><ul><li>Proposed 20 report credits per month</li><li>Saved research history</li><li>Source context and counter-evidence</li><li>Clear renewal and cancellation terms</li></ul>'+button('Preview monthly offer','offer',false)+'<p class="future-note">Allowance and price remain unvalidated. No public checkout until product and processor approval.</p></article><article class="price-card"><span class="plan-tag">LATER · PUBLISHER PILOT</span><h3>Publisher</h3><p class="desc">A possible higher-volume workflow for people who research and publish repeatedly.</p><div class="price">'+(p.launch?p.publisher:'Price not set')+' <span>'+(p.launch?'/ month':'')+'</span></div><ul><li>Higher research allowance concept</li><li>Multi-fixture workflow concept</li><li>Exports only where source licences allow</li></ul>'+button('Preview publisher path','persona-C',true)+'<p class="future-note">Do not sell until the workflow, rights and support have been verified.</p></article></div>';}
+function landing(){var m=messages[persona];return '<section class="hero"><div><p class="eyebrow">'+m.tag+'</p><h1>'+m.title+'</h1><p class="lede">'+m.copy+'</p><div class="actions">'+button(m.cta,'optin',false)+button('See how it works','how',true)+'</div><p class="disclaimer">MatchSieve is a research aid. It does not promise outcomes or profit. The live report will be grounded only in available, permitted records.</p><div class="hero-proof"><span>Market-specific</span><span>Counter-evidence</span><span>Gaps made visible</span></div></div>'+reportPreview()+'</section><section class="section" id="how"><div class="section-head"><div><p class="kicker">THE PROCESS</p><h2>From scattered stats to a clearer research brief.</h2><p>Raw scores and basic tables are available elsewhere. The paid value to test is the work of organising relevant evidence around the question you chose.</p></div></div><div class="grid3"><article class="card"><span class="card-number">01 / FIXTURE</span><h3>Start with the match</h3><p>Find the fixture you are already researching. If no valid fixture or reliable source is available, the product should say so.</p></article><article class="card"><span class="card-number">02 / MARKET</span><h3>Choose your question</h3><p>Focus the report on the market context you want to examine instead of receiving a generic strip of team form.</p></article><article class="card"><span class="card-number">03 / EVIDENCE</span><h3>Inspect both sides</h3><p>Read supporting signals, counter-evidence, source details, sample size and missing information together.</p></article></div></section><section class="section" id="personas"><div class="section-head"><div><p class="kicker">PICK YOUR RESEARCH JOB</p><h2>Made for the way you research football.</h2><p>Choose the description closest to your job. The product stays the same; the explanation changes to meet your need.</p></div></div>'+personaCards()+'</section><section class="section" id="plans"><div class="section-head"><div><p class="kicker">OFFER LADDER · PREVIEW</p><h2>Try the research before committing.</h2><p>Start with a useful sample. Pay once if you research occasionally, or choose a recurring plan only if repeat research gives you continuing value.</p></div></div>'+planPrices()+'</section><section class="section"><div class="bottom-cta"><div><h2>'+esc(m.cta)+'</h2><p>'+esc(m.reason)+' The checklist is a proposed lead magnet; this preview does not send email or record personal data.</p></div>'+button('Preview the opt-in page','optin',false)+'</div></section>';}
+function optin(){return '<section class="page-panel">'+steps('optin')+'<p class="eyebrow">FREE RESEARCH CHECKLIST</p><h1>A better match-research habit starts with <em>better questions.</em></h1><p class="lede">Preview the proposed opt-in for the 7-Point Match Research Checklist and a reviewed sample-report explanation. The live version will only collect data after the form endpoint, privacy notice and delivery flow are connected.</p><form id="leadForm"><div class="form-grid"><div class="field"><label for="leadName">First name (optional)</label><input id="leadName" name="name" autocomplete="given-name" placeholder="How should we address you?"></div><div class="field"><label for="leadEmail">Email address</label><input id="leadEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com"><small>Required to deliver the requested resource in the live version.</small></div><div class="field wide"><label for="leadPersona">What best describes you?</label><select id="leadPersona" name="persona"><option value="A">I research matches for myself</option><option value="B">I compare claims and market evidence</option><option value="C">I create football content or publish previews</option></select></div><div class="field wide"><label for="leadCountry">Country / market of interest</label><select id="leadCountry" name="country">'+[['UK','United Kingdom'],['US','United States'],['CA','Canada'],['EU','Selected Europe'],['NG','Nigeria'],['GH','Ghana'],['KE','Kenya']].map(function(v){return '<option value="'+v[0]+'" '+(country===v[0]?'selected':'')+'>'+v[1]+'</option>';}).join('')+'</select><small>This choice helps us understand demand. It does not set a live price in this prototype.</small></div></div><label class="consent"><input type="checkbox" id="promoConsent" name="promoConsent"><span>I'd also like occasional MatchSieve product updates and research notes. This is optional and can be withdrawn; the requested resource must not depend on marketing consent.</span></label><div class="action-row"><button class="btn" type="submit">Preview resource request <span class="arrow">↗</span></button><button class="btn secondary" type="button" data-action="landing">Back to overview</button></div></form><div class="notice">Preview only: the form validates in this browser and moves to the next design screen. It does not send or store your name, email, consent or country.</div></section>';}
+function leadThanks(){return '<section class="page-panel">'+steps('lead-thanks')+'<div class="success-mark">✓</div><p class="eyebrow">RESOURCE REQUEST · PREVIEW STATE</p><h1>Your next step is to <em>inspect the evidence.</em></h1><p class="lede">In the live funnel, the backend would now confirm the opt-in and deliver the checklist by email or provide the download. Nothing has been sent from this preview.</p><ul class="state-list"><li>Review what a sample report can and cannot tell you.</li><li>Choose whether you want optional research updates.</li><li>Join the free community only if you want peer discussion; a community join is not a paid subscription.</li></ul><div class="action-row">'+button('Preview the sample report offer','offer',false)+button('Preview free community step','community',true)+'</div><div class="notice">Live acceptance rule: record consent, use an idempotent lead ID, deliver the requested resource, and keep marketing consent separately recorded.</div></section>';}
+function offer(){return '<section class="page-panel">'+steps('offer')+'<p class="eyebrow">ONE-OFF OR MONTHLY · TEST OFFER</p><h1>Choose the level of research you will <em>actually use.</em></h1><p class="lede">You should not pay for a subscription if you only need an occasional report. The live offer must state supported competitions, report allowance, data freshness and renewal rules before checkout.</p>'+planPrices()+'<div class="action-row">'+button('Preview checkout · one-off pack','checkout-oneoff',false)+button('Preview checkout · monthly plan','checkout-monthly',true)+'</div><div class="notice">This preview uses test prices and proposed allowances. Payment processing, card entry, tax calculation and subscription entitlement are not connected.</div></section>';}
+function checkout(mode){var monthly=mode==='monthly';var amount=monthly?currency[country].core:currency[country].trip;return '<section class="page-panel">'+steps('checkout')+'<p class="eyebrow">CHECKOUT · NON-TRANSACTIONAL PREVIEW</p><h1>Confirm what you are choosing.</h1><p class="lede">A real checkout must display the final amount, currency, taxes where applicable, one-off or recurring schedule, included allowance, cancellation policy and seller details before the customer confirms.</p><div class="community-choice"><div><strong>'+(monthly?'Researcher monthly plan':'Weekend Research Pack')+'</strong><small>'+(monthly?'Proposed 20 report credits per monthly period; renews monthly until cancelled.':'Proposed 3 report credits; one-time payment and no automatic renewal.')+'</small></div><span class="status-chip">'+(currency[country].launch?amount:'Price not set')+(monthly?' / month':' one-off')+'</span></div><div class="notice">No payment will be collected. These controls demonstrate the status-specific screens only; do not treat them as payment confirmation.</div><h3 style="font-size:13px;margin-top:26px">Preview each possible server outcome</h3><div class="action-row">'+button('Simulate webhook-confirmed payment','paid-thanks',false)+button('Simulate pending payment','pending',true)+button('Simulate payment failure','failed',true)+button('Cancel checkout','cancelled',true)+'</div><p class="disclaimer">In the real system, the confirmation state must come from a verified server-side payment event, not this button or the browser return URL.</p></section>';}
+function paidThanks(){return '<section class="page-panel">'+steps('paid-thanks')+'<div class="success-mark">✓</div><p class="eyebrow">PAID THANK-YOU · SIMULATED ONLY</p><h1>Your account access would be <em>activated here.</em></h1><p class="lede">This is the view shown only after the backend verifies the payment and active entitlement. In this preview, no payment has happened and no access has been granted.</p><ul class="state-list"><li>Show the actual plan, amount, currency and renewal schedule.</li><li>Guide the customer through the first fixture and market report.</li><li>Offer optional community access after the status is confirmed.</li></ul><div class="action-row">'+button('Preview verified-member community step','community-paid',false)+button('Go to product preview','landing',true)+'</div><div class="notice">Access rule: a verified server event updates the entitlement record. Repeated webhooks must not duplicate credits or send multiple welcome messages.</div></section>';}
+function pending(){return '<section class="page-panel">'+steps('checkout')+'<span class="status-chip pending">Awaiting confirmation</span><h1 style="margin-top:18px">Your payment is still being <em>confirmed.</em></h1><p class="lede">Do not pay again until the transaction status is known. In the live flow, this page checks status with the backend and displays the support route if confirmation takes too long.</p><ul class="state-list"><li>Paid access remains locked until confirmation arrives.</li><li>No premium WhatsApp or Telegram invite is sent while pending.</li><li>A duplicate or delayed webhook is handled safely.</li></ul><div class="action-row">'+button('Check status again (preview)','pending',false)+button('Return to offers','offer',true)+'</div></section>';}
+function failed(){return '<section class="page-panel">'+steps('checkout')+'<span class="status-chip failed">Payment not confirmed</span><h1 style="margin-top:18px">No paid access has been <em>activated.</em></h1><p class="lede">The live version will show a useful explanation where the payment provider supplies one, an optional retry, and the free sample path. It will not pretend the purchase succeeded.</p><div class="action-row">'+button('Retry checkout preview','checkout',false)+button('Continue with the free sample','optin',true)+'</div><div class="notice">No charge was attempted in this preview. The retry button opens a mockup only.</div></section>';}
+function cancelled(){return '<section class="page-panel">'+steps('checkout')+'<p class="eyebrow">CHECKOUT CANCELLED</p><h1>You can return whenever the product <em>fits your needs.</em></h1><p class="lede">No payment was taken in this preview. In the live funnel, cancellation should not trigger guilt, a countdown or a forced sales call.</p><div class="action-row">'+button('Review the plans again','offer',false)+button('Back to the free research guide','optin',true)+'</div></section>';}
+function community(paid){return '<section class="page-panel"><p class="eyebrow">COMMUNITY · OPTIONAL</p><h1>'+(paid?'Paid community access follows confirmed entitlement.':'Join the football research conversation—if it is useful to you.')+'</h1><p class="lede">'+(paid?'In the live version, only a confirmed and active subscriber receives the approved paid-community instructions. A cancelled or refunded entitlement is rechecked.':'The free community is separate from a paid subscription. The live page will use the actual approved group/channel links and explain its purpose and rules.')+'</p><div class="community-choice"><div><strong>WhatsApp</strong><small>Optional community / announcements. Invite links can be forwarded; the account entitlement remains authoritative.</small></div><button type="button" data-action="community-note">Preview link state</button></div><div class="community-choice"><div><strong>Telegram</strong><small>Optional channel or group. A bot may issue an expiring/member-limited invite after a verified purchase, with suitable admin rights.</small></div><button type="button" data-action="community-note">Preview link state</button></div><div class="notice" id="communityNote">Preview: no real group links have been connected.</div><div class="action-row">'+button('Back to the funnel overview','landing',true)+'</div></section>';}
+function render(){document.querySelectorAll('[data-stage]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-stage')===stage);});var content='';if(stage==='landing')content=landing();else if(stage==='optin')content=optin();else if(stage==='lead-thanks')content=leadThanks();else if(stage==='offer')content=offer();else if(stage==='checkout')content=checkout('monthly');else if(stage==='checkout-oneoff')content=checkout('oneoff');else if(stage==='checkout-monthly')content=checkout('monthly');else if(stage==='paid-thanks')content=paidThanks();else if(stage==='pending')content=pending();else if(stage==='failed')content=failed();else if(stage==='cancelled')content=cancelled();else if(stage==='community')content=community(false);else if(stage==='community-paid')content=community(true);screen.innerHTML=content;bind();if(stage==='landing'||stage==='offer'){var cs=document.getElementById('countrySelect');if(cs)cs.addEventListener('change',function(){country=cs.value;render();});}}
+function setStage(next){stage=next;render();screen.focus({preventScroll:true});window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+function bind(){document.querySelectorAll('[data-action]').forEach(function(el){el.addEventListener('click',function(){var action=el.getAttribute('data-action');if(action.indexOf('persona-')===0){persona=action.slice(-1);if(stage==='landing')render();else setStage('landing');return;}if(action==='how'){document.getElementById('how')?.scrollIntoView({behavior:'smooth'});return;}if(action==='community-note'){var n=document.getElementById('communityNote');if(n)n.textContent='Preview only: no real community URL or membership change exists.';return;}if(action==='checkout-oneoff'){setStage('checkout-oneoff');return;}if(action==='checkout-monthly'){setStage('checkout-monthly');return;}if(action==='checkout'){setStage('checkout-monthly');return;}setStage(action);});});var form=document.getElementById('leadForm');if(form)form.addEventListener('submit',function(ev){ev.preventDefault();if(!form.reportValidity())return;var p=document.getElementById('leadPersona');var c=document.getElementById('leadCountry');persona=p?p.value:persona;country=c?c.value:country;var marketing=document.getElementById('promoConsent');window.__matchsieveFunnelPreviewState={formValidatedInBrowser:true,marketingOptInPreviewed:!!(marketing&&marketing.checked),countryPreview:country,personaPreview:persona,submittedToServer:false};setStage('lead-thanks');});}
+document.querySelectorAll('[data-stage]').forEach(function(b){b.addEventListener('click',function(){setStage(b.getAttribute('data-stage'));});});
+document.getElementById('homeLink').addEventListener('click',function(ev){ev.preventDefault();setStage('landing');});
+window.MatchSieveFunnelPreview={showPage:setStage,getAttribution:function(){return {source:attribution.source,campaign:attribution.campaign};},getSelectedPersona:function(){return persona;},getSelectedCountry:function(){return country;}};
+render();
+})();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 ## Positioning
 
-**Working position:** “Pick the fixture. Pick the market. Get the evidence that matters.”
+**Working position:** “Stop guessing the odds. Examine the evidence.”
 
 MatchSieve is a football research desk, not a generic scores website and not a promise of winning bets. Its primary output is a market-specific research brief that saves the user the effort of comparing scattered information.
 
@@ -39,26 +39,28 @@ Recent form, H2H and goals statistics remain data inputs. The customer pays for 
 
 ## Launch market and segment
 
-**Updated strategic hypothesis (20 October 2026):** position for English-speaking paying customers, with the UK as the first market to test at a £7–£10 monthly price point. Consider US/Canada next, then selected European and Australian markets only after payment access, tax obligations, advertising rules and demand are checked. Do not attempt to launch every territory at once.
+**Updated strategic hypothesis (21 October 2026):** position for serious-minded adult football researchers, with the UK as the first paid market to test one £19/month premium Research Desk membership. Consider US/Canada next, then selected European and Australian markets only after payment access, tax obligations, advertising rules and demand are checked. Do not attempt to launch every territory at once.
 
 Persona A is the time-poor adult researcher; Persona C is the publisher who researches repeatedly and could justify a higher-volume tier. Persona B remains useful but must not be assumed to be a non-payer: find out whether the real objection is price, trust, free alternatives or an unclear paid benefit. The Nigeria-first hypothesis remains relevant to the founder's operations and a possible later market, but it is no longer the primary customer-pricing assumption.
 
 Start with one well-supported football market/competition set—likely the English Premier League plus a small number justified by interviews. This is not a general livescores replacement. The paid product is market-specific interpretation and provenance built on licensed/verified data.
 
-## Pricing experiments — hypotheses only
+## Pricing policy — premium UK pilot only
 
-**Primary test:** £7 / £8 / £10 monthly subscriptions for a tightly scoped research pass, or the comparable €7 / €8 / €10 tiers when European customers are being tested. Treat these as experiments, not validated prices. Make report allowance, retention, fair-use and cancellation terms clear. Do not launch an unlimited plan until per-subscriber data/API costs and usage are measured.
+**Initial offer hypothesis:** £19/month for the MatchSieve Research Desk, with a proposed allowance of up to 20 full research briefs per billing month and a clearly named supported competition set. This is a commercial hypothesis, not validated willingness-to-pay and not live pricing. It intentionally supersedes the previous £7–£10 price ladder, cheap credit packs and matchday passes. Do not publish a bargain tier to chase sign-ups.
 
-Provide a free sample or capped trial only to demonstrate report quality. Persona C may warrant a separate publisher tier later for repeatable research, archive/export and a larger fair-use allowance, but only after interviews validate the job and willingness to pay.
+Lead with a reviewed sample report and the “Stop Guessing the Odds — The Football Betting Maths Playbook” educational offer. Free material should demonstrate the standard; it must not silently unlock full reports. The paid offer should explain the report allowance, supported competitions, source coverage/freshness, data gaps, renewal and cancellation before checkout.
 
-The original Nigeria credit-pack prices are parked as a possible later-market experiment, not the current pricing assumption. Measure checkout conversion, repeat usage, monthly churn, payment fees, refunds, cost per active subscriber and gross margin. Processing fees are only one cost: data licensing, billing taxes, customer support, failed payments and acquisition can matter more.
+No US, Canada, EU, Nigeria, Ghana, Kenya, Uganda or UAE price is approved for launch. Do not convert the UK price by exchange rate and call it local market research. Consider a publisher offer only after a real publisher workflow, source rights and recurring paid demand are validated.
+
+The price is an estimate intended to test a premium position, not a promise that the business will be profitable. Measure payment conversion, repeat report use, renewal, payment fees, refunds, source/API cost, cost per active member, support and acquisition. Keep actual direct delivery costs low enough to preserve contribution margin; do not widen the 20-brief allowance until usage data supports it. Processor and seller-country/category approval are launch gates.
 
 ## Weekly offer/content rhythm
 
 Test these as a real editorial calendar, not fake scarcity:
-- **Wednesday — Midweek Match Lab:** one public sample, question-led educational post and a real limited-time bundle if there is a clear deadline.
-- **Friday — Weekend Research Pass:** bundle for the upcoming fixture slate; clear expiry and no guaranteed outcome.
-- **Sunday — Results & Review:** transparent report of what settled, what failed, what was void, and what needs methodological review.
+- **Wednesday — Match Research Lab:** one reviewed public sample and a question-led explanation of the research method.
+- **Friday — Weekend Research Brief:** show how the research process approaches the upcoming fixture slate; do not invent a deadline or use a cheap matchday deal.
+- **Sunday — Results & Review:** transparent review of what settled, what failed, what was void, and what needs methodological review.
 
 Offer deadlines must correspond to actual kickoff/content windows. No reset timer or fake “last chance” claims.
 

@@ -209,8 +209,8 @@ class SoccerwayAdapter:
             from playwright.sync_api import sync_playwright
         except ImportError as exc:
             raise RuntimeError(
-                "The Soccerway adapter requires Playwright. Install project scraping extras "
-                "and the Chromium browser; the adapter itself is part of MatchSieve."
+                "The Soccerway adapter requires Playwright. Run 'python -m pip install playwright' "
+                "and 'python -m playwright install chromium'. The adapter is part of MatchSieve."
             ) from exc
 
         pages: list[dict[str, Any]] = []

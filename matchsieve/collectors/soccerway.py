@@ -423,92 +423,150 @@ class SoccerwayAdapter:
 
     @staticmethod
     def _extract_fixture_rows(page: Any, source_url: str, *, max_fixtures: int = FIXTURE_LINK_LIMIT) -> list[dict[str, Any]]:
-        fixtures: list[dict[str, Any]] = []
-        seen: set[str] = set()
-        # Work through semantic match links and visible row/card containers; the link target,
-        # not a guessed URL, becomes the selected fixture's canonical entry point.
-        selectors = (
-            "a[href*='/match/']",
-            "a[href*='/game/']",
-        )
+        """Group links by canonical match URL so home/away labels are not lost or mixed."""
+        grouped: dict[str, dict[str, Any]] = {}
+        selectors = ("a[href*='/match/']", "a[href*='/game/']")
         for selector in selectors:
             links = page.locator(selector)
-            for index in range(min(links.count(), max_fixtures * 4)):
+            for index in range(min(links.count(), max_fixtures * 8)):
                 node = links.nth(index)
                 try:
                     href = (node.get_attribute("href") or "").strip()
                     absolute = urljoin(source_url, href)
                     if not SoccerwayAdapter._is_match_url(absolute):
                         continue
-                    canonical = SoccerwayAdapter.validate_match_url(absolute)
-                    if canonical in seen:
-                        continue
+                    canonical = SoccerwayAdapter.validate_url(absolute)
                     label = re.sub(r"\s+", " ", (node.inner_text(timeout=500) or "").strip())
-                    if not label:
-                        continue
-                    seen.add(canonical)
-                    container = None
-                    for ancestor_selector in ("xpath=ancestor::tr[1]", "xpath=ancestor::*[@data-testid][1]", "xpath=ancestor::div[1]"):
-                        try:
-                            candidate = node.locator(ancestor_selector)
-                            value = re.sub(r"\s+", " ", (candidate.inner_text(timeout=450) or "").strip())
-                            if value and len(value) < 1200:
-                                container = value
-                                break
-                        except Exception:
-                            continue
-                    # Prefer the closest row/card with the two teams; do not trust a generic page-level ancestor.
-                    full_line = container or label
-                    pair = SoccerwayAdapter._teams_from_title(label)
-                    home_team, away_team = pair if pair else (None, None)
-                    if not (home_team and away_team):
-                        candidate_pair = re.search(
-                            r"(.{1,100}?)\s+(?:v|vs\.?|versus)\s+(.{1,100}?)(?=\s+\d{1,2}:\d{2}|\s+\d+\s*[-–]\s*\d+|\s+(?:Live|Full-time|Finished|Scheduled|Half-time)\b|$)",
-                            full_line, re.I
-                        )
-                        if candidate_pair:
-                            home_team = candidate_pair.group(1).strip(" -|")
-                            away_team = candidate_pair.group(2).strip(" -|")
-                    if not (home_team and away_team):
-                        team_links = node.locator("xpath=ancestor::tr[1]//a[contains(@href,'/team/')]")
-                        try:
-                            team_names = []
-                            for team_index in range(min(team_links.count(), 2)):
-                                team_names.append(re.sub(r"\s+", " ", (team_links.nth(team_index).inner_text(timeout=350) or "").strip()))
-                            if len(team_names) == 2:
-                                home_team, away_team = team_names
-                        except Exception:
-                            pass
-                    kickoff_match = re.search(r"\b(\d{1,2}:\d{2})\b", full_line)
-                    score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", full_line)
-                    status = next((value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled") if re.search(r"\b" + re.escape(value) + r"\b", full_line, re.I)), None)
-                    # Only treat a short competition label as a competition; don't infer it from a page-wide ancestor.
-                    competition = None
-                    if container:
-                        possible = re.search(
-                            r"\b(Premier League|Champions League|Europa League|Conference League|Serie A|LaLiga|Bundesliga|Ligue 1|NPFL|[^|\n]{1,70}\b(?:Cup|League)\b)\b",
-                            full_line, re.I
-                        )
-                        if possible:
-                            competition = re.sub(r"\s+", " ", possible.group(1)).strip(" -|")
-                    if not (home_team and away_team):
-                        continue
-                    fixtures.append({
-                        "source": "Soccerway",
-                        "source_url": canonical,
-                        "page_identity": "/".join([part for part in urlparse(canonical).path.split("/") if part][:3]),
-                        "competition": competition,
-                        "home_team": home_team,
-                        "away_team": away_team,
-                        "kickoff_display": kickoff_match.group(1) if kickoff_match else None,
-                        "score": {"home": int(score_match.group(1)), "away": int(score_match.group(2))} if score_match else None,
-                        "status": status,
-                        "visible_text": full_line[:1000],
-                    })
-                    if len(fixtures) >= max_fixtures:
-                        return fixtures
+                    if canonical not in grouped:
+                        grouped[canonical] = {"url": canonical, "nodes": [], "labels": [], "container": None}
+                    grouped[canonical]["nodes"].append(node)
+                    if label and label not in grouped[canonical]["labels"]:
+                        grouped[canonical]["labels"].append(label)
                 except Exception:
                     continue
+
+        fixtures: list[dict[str, Any]] = []
+        for canonical, group in grouped.items():
+            nodes = group["nodes"]
+            labels = group["labels"]
+            row_locator = None
+            row_text = " | ".join(labels)
+            # Find the smallest ancestor that contains links for just this fixture.
+            for depth in range(1, 9):
+                if not nodes:
+                    break
+                try:
+                    candidate = nodes[0].locator(f"xpath=ancestor::*[{depth}]")
+                    text_value = re.sub(r"\s+", " ", (candidate.inner_text(timeout=450) or "").strip())
+                    if not text_value or len(text_value) > 1_200:
+                        continue
+                    descendant_links = candidate.locator("a[href*='/match/'],a[href*='/game/']")
+                    descendant_ids: set[str] = set()
+                    for j in range(min(descendant_links.count(), 80)):
+                        try:
+                            link_url = urljoin(source_url, descendant_links.nth(j).get_attribute("href") or "")
+                            if SoccerwayAdapter._is_match_url(link_url):
+                                descendant_ids.add(SoccerwayAdapter.validate_url(link_url))
+                        except Exception:
+                            continue
+                    # Exactly one unique match URL in the block means we haven't crossed
+                    # into the surrounding list or a sidebar containing other fixtures.
+                    if descendant_ids == {canonical}:
+                        has_fixture_marker = (
+                            bool(re.search(r"\b\d{1,2}:\d{2}\b", text_value))
+                            or bool(re.search(r"(?<!\d)\d{1,2}\s*[-–:]\s*\d{1,2}(?!\d)", text_value))
+                            or len(labels) >= 2
+                            or bool(SoccerwayAdapter._teams_from_title(text_value))
+                        )
+                        if has_fixture_marker:
+                            row_locator = candidate
+                            row_text = text_value
+                            break
+                except Exception:
+                    continue
+
+            if not labels and not row_text:
+                continue
+            home_team = away_team = None
+            for label in labels:
+                pair = SoccerwayAdapter._teams_from_title(label)
+                if pair:
+                    home_team, away_team = pair
+                    break
+            if not (home_team and away_team):
+                # If Soccerway renders separate linked team labels for one match,
+                # use the distinct labels associated with that same canonical URL.
+                candidates = []
+                for label in labels:
+                    cleaned = re.sub(r"\s+", " ", label).strip(" -|")
+                    if (cleaned and len(cleaned) <= 90
+                            and not re.search(r"\b(?:live|full-time|finished|scheduled|half-time|show more|stats|lineups?|odds)\b", cleaned, re.I)
+                            and not re.search(r"\b\d{1,2}:\d{2}\b", cleaned)):
+                        if cleaned not in candidates:
+                            candidates.append(cleaned)
+                if len(candidates) >= 2:
+                    home_team, away_team = candidates[0], candidates[1]
+
+            if not (home_team and away_team) and row_locator is not None:
+                # Source-specific team anchors in the selected row/card are another
+                # explicit option; never scan team names from the whole page.
+                for selector in ("a[href*='/team/']", "[class*='team-name' i]", "[data-testid*='team-name' i]"):
+                    try:
+                        team_nodes = row_locator.locator(selector)
+                        names = []
+                        for k in range(min(team_nodes.count(), 4)):
+                            text_name = re.sub(r"\s+", " ", (team_nodes.nth(k).inner_text(timeout=350) or "").strip())
+                            if text_name and text_name not in names:
+                                names.append(text_name)
+                        if len(names) >= 2:
+                            home_team, away_team = names[0], names[1]
+                            break
+                    except Exception:
+                        continue
+
+            if not (home_team and away_team):
+                # No reliable team pair: don't create a misleading fixture object.
+                continue
+
+            kickoff_match = re.search(r"\b(\d{1,2}:\d{2})\b", row_text)
+            score_match = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", row_text)
+            status = next((
+                value for value in ("Full-time", "Finished", "Live", "Half-time", "Postponed", "Scheduled")
+                if re.search(r"\b" + re.escape(value) + r"\b", row_text, re.I)
+            ), None)
+
+            competition = None
+            if row_locator is not None:
+                try:
+                    previous_heading = row_locator.locator("xpath=preceding::*[self::h1 or self::h2 or self::h3 or self::h4 or @role='heading'][1]")
+                    heading_text = re.sub(r"\s+", " ", (previous_heading.first.inner_text(timeout=350) or "").strip())
+                    if heading_text and re.search(r"\b(league|cup|championship|division|round|group|premier|bundesliga|serie a|laliga)\b", heading_text, re.I):
+                        competition = heading_text[:200]
+                except Exception:
+                    pass
+                if not competition:
+                    try:
+                        row_competition = row_locator.locator("[class*='competition' i],[data-testid*='competition' i]")
+                        value = re.sub(r"\s+", " ", (row_competition.first.inner_text(timeout=350) or "").strip())
+                        if value and len(value) <= 160:
+                            competition = value
+                    except Exception:
+                        pass
+
+            fixtures.append({
+                "source": "Soccerway",
+                "source_url": canonical,
+                "page_identity": "/".join([part for part in urlparse(canonical).path.split("/") if part][-3:]),
+                "competition": competition,
+                "home_team": home_team,
+                "away_team": away_team,
+                "kickoff_display": kickoff_match.group(1) if kickoff_match else None,
+                "score": {"home": int(score_match.group(1)), "away": int(score_match.group(2))} if score_match else None,
+                "status": status,
+                "visible_text": row_text[:1000],
+            })
+            if len(fixtures) >= max_fixtures:
+                break
         return fixtures
 
     @staticmethod

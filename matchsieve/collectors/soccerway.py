@@ -228,7 +228,9 @@ class SoccerwayAdapter:
     def _base_and_identity(url: str) -> tuple[str, str]:
         base = SoccerwayAdapter.validate_url(url)
         p = urlparse(base)
-        return base, "/".join([part for part in p.path.split("/") if part][:3]).lower()
+        parts = [part for part in p.path.split("/") if part]
+        match_index = max(i for i, part in enumerate(parts) if part.lower() in {"match", "game"})
+        return base, "/".join(parts[match_index:match_index + 3]).lower()
 
     @staticmethod
     def _same_match(candidate_url: str, base_url: str) -> bool:

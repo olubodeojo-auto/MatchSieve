@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import date as date_type
 from typing import Any
 
 from .base import ProviderError
@@ -77,7 +78,12 @@ class FootballDataIOProvider:
         token = os.getenv("FOOTBALLDATA_IO_API_KEY", "").strip()
         if not token:
             raise ProviderError("Set FOOTBALLDATA_IO_API_KEY in local .env before using FootballData.io.")
-        endpoint = "fixtures/today" if date_from == date_to else "fixtures/upcoming"
+        if date_from != date_to:
+            raise ProviderError("FootballData.io adapter currently accepts one date per fetch.")
+        today = date_type.today().isoformat()
+        if date_from < today:
+            raise ProviderError("FootballData.io tested endpoints do not establish historical-date support; refusing to return today's fixtures for a past date.")
+        endpoint = "fixtures/today" if date_from == today else "fixtures/upcoming"
         payload = get_json(f"{self.base_url}/{endpoint}", headers={"Authorization": f"Bearer {token}"})
         rows = _rows(payload, "FootballData.io")
         mapped = [_normalise(row, self.key) for row in rows]

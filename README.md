@@ -16,7 +16,7 @@ The Supabase project is newly created. No schema or data has been migrated into 
 
 The dedicated `matchsieve.collectors.soccerway.SoccerwayAdapter` is the source-specific collection adapter. It discovers known same-match tabs, tries documented route patterns, extracts structured fields where available, saves page-level provenance and states which fields were not found. It does not bypass logins, CAPTCHAs, HTTP denials or rate limits. A site's presence on the web does not grant commercial reuse rights; review the applicable terms before any paid use.
 
-Install the scraping extra and Chromium once:
+Install Playwright and Chromium once:
 
 ```powershell
 python -m pip install playwright

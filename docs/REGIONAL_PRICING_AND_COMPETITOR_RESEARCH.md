@@ -128,9 +128,11 @@ Do not claim that MatchSieve is more accurate than competitors, guarantees profi
 | 250 | £4,750 |
 | 500 | £9,500 |
 
-These figures are arithmetic only and exclude payment fees, taxes, refunds, data/API licences, hosting, support, acquisition, founder compensation and other operating expenses. A £19 price only supports the business if people pay, return and renew while contribution margin stays healthy.
+These are gross sales scenarios, not profit or a forecast. They exclude data/API licences, hosting, support, acquisition, tax, refunds, founder compensation and other operating expenses.
 
-Before paid launch, calculate actual net receipts and cost-to-serve from real payment and usage logs. Aim to keep direct per-member data and infrastructure costs comfortably below 25% of net subscription receipts, then separately budget customer support and acquisition. Treat the 20-brief allowance as a proposed usage ceiling; monitor it before widening any allowance.
+**Processor-fee example:** Selar's current published help article lists a GBP charge of 10% + 50 pence. If that exact schedule applies to a £19 charge, the fee is approximately £2.40 and the amount remaining is £16.60 before any tax, refunds, foreign-exchange/payout adjustment or product-running cost. At 100 subscribers, that scenario is £1,900 gross, about £240 in those Selar transaction fees and about £1,660 before all other costs. Confirm actual account eligibility, the price/currency charged, fee schedule and settlement statement before relying on this arithmetic. Source: https://help.selar.com/portal/en/kb/articles/payout-conversion-structure.
+
+Use £16.60 only as a fee illustration, not as guaranteed net receipts. Before paid launch, calculate actual net receipts and cost-to-serve from real payment and usage logs. Initial operating guardrail: keep direct variable data and infrastructure costs below 25% of actual net subscription receipts, then separately budget support, customer acquisition, taxes and founder time. If paid data licensing makes that impossible at the current allowance, renegotiate the supplier, narrow the supported competitions/usage, or reprice based on actual value and costs. Do not widen the proposed 20-brief ceiling until usage and cost evidence supports it.
 
 ## 7. Validation gate before taking payment
 

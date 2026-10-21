@@ -1,6 +1,6 @@
 # MatchSieve
 
-MatchSieve is the football research and intelligence platform being developed from the earlier BojoSentinelAI source. The repository preserves the original analysis engines, extractors and provider integrations while the root project establishes a tested, local-first data-ingestion and reporting foundation.
+MatchSieve is a premium, evidence-led football research desk being developed from the earlier BojoSentinelAI source. It is for serious-minded adult researchers who value traceable reasoning over tipster hype. The repository preserves the original analysis engines, extractors and provider integrations while the root project establishes a local-first data-ingestion and reporting foundation.
 
 ## Project setup
 
@@ -11,6 +11,25 @@ MatchSieve is the football research and intelligence platform being developed fr
 - **Supabase region:** Frankfurt (`eu-central-1`)
 
 The Supabase project is newly created. No schema or data has been migrated into it yet. The root foundation uses a local SQLite archive for its initial offline-first workflow; do not point production data at Supabase until the schema and migration plan have been reviewed.
+
+## Collect a Soccerway match (local research only)
+
+The dedicated `matchsieve.collectors.soccerway.SoccerwayAdapter` is the source-specific collection adapter. It discovers known same-match tabs, tries documented route patterns, extracts structured fields where available, saves page-level provenance and states which fields were not found. It does not bypass logins, CAPTCHAs, HTTP denials or rate limits. A site's presence on the web does not grant commercial reuse rights; review the applicable terms before any paid use.
+
+Install the scraping extra and Chromium once:
+
+```powershell
+pip install -e ".[scraping]"
+python -m playwright install chromium
+```
+
+Capture one match into the local knowledge-base archive:
+
+```powershell
+python scripts/collect_soccerway.py "https://www.soccerway.com/match/home-team-id/away-team-id/"
+```
+
+The command prints the exact archive path, captured pages, extracted fields, warnings and gaps. Inspect the resulting JSON before research use; missing xG, line-ups, events or other metrics remain missing and are never replaced with invented values. The scraper is not yet verified against the site's current live DOM in this commit.
 
 ## Run the local research desk
 
@@ -46,8 +65,8 @@ node --check web/app.js
 - [`docs/UNIVERSAL_FUNNEL_MAP.md`](docs/UNIVERSAL_FUNNEL_MAP.md) — the universal journey, Persona A/B/C entry paths, lead magnet, tripwire, subscription, publisher upsell, thank-you and payment-state flows, geography, platform policy gates and automation.
 - [`web/funnel-preview.html`](web/funnel-preview.html) — interactive design preview for landing, opt-in, lead thank-you, offer, checkout, paid thank-you, pending and failed payment pages. It is a visual prototype only: no lead details are sent or saved and no payments or entitlements are processed.
 - Local preview URL after starting the existing server: `http://127.0.0.1:8765/funnel-preview.html`.
-- Current proposed UK display values are hypotheses only: £2.99 one-off pack, £7.99/month Researcher and £19/month future Publisher pilot. Do not ship these as live prices until product limits and unit economics are measured and the payment provider approves the exact product category.
-- The page allows switching persona messages and market preview paths. Non-UK regions are not approved launches; the preview displays “price not set” for those markets.
+- The current commercial hypothesis is one premium UK-first Research Desk membership at £19/month, with a proposed ceiling of 20 full research briefs per billing month. This is a pilot hypothesis, not a validated price or live offer. No economy packs, matchday passes or non-UK prices are part of launch. Do not activate it until representative reports, data rights, the exact processor/product category, secure entitlements and contribution margin are checked.
+- The page allows switching persona messages and market preview paths. Non-UK regions are closed for this launch and display “price not set”. The offer is designed for people who value research, not for everyone.
 - Payment/processor approval is a launch gate. Payhip, Gumroad and Stripe all publish restrictions relevant to gambling or sports-forecasting products. Obtain a written assessment for MatchSieve's exact offer before using a checkout.
 
 ## Product, customer and conversion work

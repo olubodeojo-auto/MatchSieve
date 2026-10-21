@@ -19,7 +19,7 @@ The dedicated `matchsieve.collectors.soccerway.SoccerwayAdapter` is the source-s
 Install the scraping extra and Chromium once:
 
 ```powershell
-pip install -e ".[scraping]"
+python -m pip install playwright
 python -m playwright install chromium
 ```
 

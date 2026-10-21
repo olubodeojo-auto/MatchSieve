@@ -561,6 +561,7 @@ class SoccerwayAdapter:
             "page_types_seen": [x["page_type"] for x in pages],
             "pages": pages,
             "statistics": aggregate["statistics"],
+            "history": aggregate.get("history", {}),
             "lineups": aggregate["lineups"],
             "events": aggregate["events"],
             "player_links": aggregate["player_links"],
@@ -647,6 +648,7 @@ class SoccerwayAdapter:
         structured = self._json_ld(page)
         headings = self._headings(page)
         dom_fields = self._dom_fields(page)
+        history_sections = self._history_section_rows(page, page_type)
         return {
             "page_type": page_type,
             "link_label": link_label,
@@ -656,6 +658,7 @@ class SoccerwayAdapter:
             "title": title[:500],
             "headings": headings[:30],
             "dom_fields": dom_fields,
+            "history_sections": history_sections,
             "text": text,
             "table_rows": tables[:300],
             "statistics": stats,
@@ -773,6 +776,76 @@ class SoccerwayAdapter:
             except Exception:
                 continue
         return result
+
+    @staticmethod
+    def _history_section_rows(page: Any, page_type: str) -> dict[str, Any]:
+        """Return separate H2H and team-form rows from explicit headings and nearby tables."""
+        sections: dict[str, Any] = {
+            "team_form": {"heading": None, "rows": [], "target_rows": TEAM_FORM_TARGET},
+            "h2h_meetings": {"heading": None, "rows": [], "target_rows": H2H_TARGET},
+        }
+        if page_type != "h2h":
+            return sections
+
+        # Identify headings explicitly; then associate the nearest following result table.
+        heading_nodes = page.locator("h1,h2,h3,h4,[role='heading']")
+        for i in range(min(heading_nodes.count(), 100)):
+            heading = heading_nodes.nth(i)
+            try:
+                label = re.sub(r"\s+", " ", (heading.inner_text(timeout=350) or "").strip())
+                kind = SoccerwayAdapter._label_kind(label)
+                if kind not in {"team_form", "h2h_meetings"}:
+                    continue
+                key = kind
+                if sections[key]["heading"] is None:
+                    sections[key]["heading"] = label
+                # Prefer a table in the same nearest ancestor containing this heading.
+                container = heading.locator("xpath=ancestor::*[self::section or self::article or @class][1]")
+                tables = container.locator("table")
+                rows: list[dict[str, Any]] = []
+                for table_index in range(min(tables.count(), 8)):
+                    table = tables.nth(table_index)
+                    trs = table.locator("tr")
+                    for row_index in range(min(trs.count(), TEAM_FORM_TARGET + H2H_TARGET + 10)):
+                        tr = trs.nth(row_index)
+                        try:
+                            cells = [re.sub(r"\s+", " ", cell.strip()) for cell in tr.locator("th,td").all_inner_texts()]
+                            cells = [cell for cell in cells if cell]
+                            if len(cells) >= 3:
+                                rows.append({
+                                    "cells": cells[:12],
+                                    "text": " | ".join(cells)[:600],
+                                    "section": key,
+                                    "source_heading": label,
+                                })
+                        except Exception:
+                            continue
+                # Keep only bounded displayed rows for this labelled section; do not synthesize missing games.
+                if rows:
+                    existing = sections[key]["rows"]
+                    seen = {row["text"] for row in existing}
+                    sections[key]["rows"].extend(row for row in rows if row["text"] not in seen)
+            except Exception:
+                continue
+
+        # Fallback: retain all match-like H2H table rows, separately labelled as unassigned
+        # rather than guessing whether they are team form or direct meetings.
+        if not sections["team_form"]["rows"] and not sections["h2h_meetings"]["rows"]:
+            tables = page.locator("table")
+            unassigned: list[dict[str, Any]] = []
+            for table_index in range(min(tables.count(), 20)):
+                trs = tables.nth(table_index).locator("tr")
+                for row_index in range(min(trs.count(), TEAM_FORM_TARGET + H2H_TARGET + 10)):
+                    try:
+                        tr = trs.nth(row_index)
+                        cells = [re.sub(r"\s+", " ", cell.strip()) for cell in tr.locator("th,td").all_inner_texts()]
+                        cells = [cell for cell in cells if cell]
+                        if len(cells) >= 3:
+                            unassigned.append({"cells": cells[:12], "text": " | ".join(cells)[:600], "section": "unassigned"})
+                    except Exception:
+                        continue
+            sections["unassigned_visible_history_rows"] = unassigned
+        return sections
 
     @staticmethod
     def _event_rows(page: Any, body_text: str) -> list[dict[str, str]]:
@@ -945,8 +1018,22 @@ class SoccerwayAdapter:
         lineups: list[dict[str, str]] = []
         events: list[dict[str, str]] = []
         players: list[dict[str, str]] = []
+        history = {
+            "team_form": {"heading": None, "rows": [], "target_rows": TEAM_FORM_TARGET},
+            "h2h_meetings": {"heading": None, "rows": [], "target_rows": H2H_TARGET},
+            "unassigned_visible_history_rows": [],
+        }
         for item in pages:
             stats.update(item.get("statistics") or {})
+            for key in ("team_form", "h2h_meetings"):
+                section = (item.get("history_sections") or {}).get(key) or {}
+                if section.get("heading") and not history[key]["heading"]:
+                    history[key]["heading"] = section["heading"]
+                existing = {row.get("text") for row in history[key]["rows"]}
+                history[key]["rows"].extend(row for row in section.get("rows", []) if row.get("text") not in existing)
+            history["unassigned_visible_history_rows"].extend(
+                (item.get("history_sections") or {}).get("unassigned_visible_history_rows", [])
+            )
             if item.get("page_type") == "lineups":
                 lineups = item.get("players") or []
             players.extend(item.get("players") or [])
@@ -978,6 +1065,7 @@ class SoccerwayAdapter:
             "lineups": lineups,
             "events": event_items[:100],
             "player_links": deduped_players[:120],
+            "history": history,
             "missing_fields": missing,
         }
 

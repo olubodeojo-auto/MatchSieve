@@ -101,6 +101,26 @@ class LiveFootballProvider:
             raise ProviderError("Set LIVEFOOTBALL_API_KEY in local .env before using LiveFootball.")
         payload = get_json(f"{self.base_url}/matches", params={"api_key": token, "date": date})
         rows = _rows(payload, "LiveFootball")
+        # LiveFootball returns the date at data.date and kickoff as a separate HH:MM.
+        # Build the match datetime before normalising; never archive a bare kickoff time.
+        for row in rows:
+            kickoff = row.get("kickoff")
+            match_date = row.get("match_date") or date
+            if kickoff and not row.get("kickoff_utc") and not row.get("utcDate"):
+                row["kickoff_utc"] = f"{match_date}T{kickoff}:00" if len(str(kickoff)) == 5 else f"{match_date}T{kickoff}"
+            status = row.get("status")
+            if isinstance(status, dict):
+                row["status"] = status.get("status") or status.get("state") or "scheduled"
+            home = row.get("home")
+            away = row.get("away")
+            if isinstance(home, dict):
+                if home.get("score") is not None:
+                    row["home_score"] = home.get("score")
+                row["home"] = home.get("name")
+            if isinstance(away, dict):
+                if away.get("score") is not None:
+                    row["away_score"] = away.get("score")
+                row["away"] = away.get("name")
         mapped = [_normalise(row, self.key) for row in rows]
         usable = [row for row in mapped if row is not None]
         if rows and not usable:

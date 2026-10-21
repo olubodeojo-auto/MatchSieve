@@ -76,8 +76,11 @@ class ProviderManager:
                     raw_payload=row.get("provider_payload", row),
                 )
                 records.append(row)
-            status = "success"
-            message = f"Received {len(records)} fixture record(s) from {source_key}; records were archived with source provenance."
+            status = "success" if records else "empty"
+            if records:
+                message = f"Received {len(records)} fixture record(s) from {source_key}; records were archived with source provenance."
+            else:
+                message = f"{source_key} returned no usable fixture records for the requested date or range; this is not counted as a successful intake."
             try:
                 kb_index = refresh_indexes(self.repo)
             except Exception as exc:

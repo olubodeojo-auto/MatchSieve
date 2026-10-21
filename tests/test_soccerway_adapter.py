@@ -91,6 +91,16 @@ class SoccerwayAdapterTests(unittest.TestCase):
         self.assertEqual(SoccerwayAdapter._label_kind("Last meetings"), "h2h_meetings")
         self.assertEqual(SoccerwayAdapter._label_kind("Last matches"), "team_form")
 
+
+    def test_history_label_classification_does_not_confuse_team_form_with_direct_h2h(self):
+        self.assertEqual(SoccerwayAdapter._label_kind("Last matches"), "team_form")
+        self.assertEqual(SoccerwayAdapter._label_kind("Last meetings"), "h2h_meetings")
+
+    def test_fixture_url_recognition_accepts_real_soccerway_team_identifiers(self):
+        self.assertTrue(SoccerwayAdapter._is_match_url(
+            "https://ng.soccerway.com/match/como-ttyLthOA/manchester-united-ppjDR086/"
+        ))
+
     def test_page_limit_is_bounded(self):
         self.assertEqual(SoccerwayAdapter(max_pages=500).max_pages, 9)
         self.assertEqual(SoccerwayAdapter(max_pages=0).max_pages, 1)

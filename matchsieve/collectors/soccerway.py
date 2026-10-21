@@ -530,6 +530,8 @@ class SoccerwayAdapter:
                                 warnings.append(f"Tab unavailable (HTTP {status}): {candidate}")
                                 continue
                             history_expansion = self._expand_history_panels(page, item["page_type"])
+                            if item["page_type"] == "h2h":
+                                warnings.extend(history_expansion.get("warnings", []))
                             captured = self._capture_page(page, response, item["page_type"], item["link_label"])
                             captured["history_expansion"] = history_expansion
                             warnings.extend(history_expansion.get("warnings", []))

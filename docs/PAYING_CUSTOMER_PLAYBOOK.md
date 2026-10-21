@@ -103,7 +103,7 @@ Ask satisfied customers to share a sample or refer someone only after they have 
 
 ## Offer design and pricing guardrails
 
-- Current UK price hypothesis: test £7, £8 and £10 per month only once the checkout, plan limits and cancellation flow are ready. These prices are unvalidated.
+- Current UK price hypothesis: one Research Desk membership at £19/month with a proposed cap of 20 full research briefs per billing month. It is not validated and not live. The previous £7/£8/£10 ladder, cheap credit packs and matchday pass are retired from launch.
 - Do not call a subscription “unlimited” until API/data costs and rate limits are measured.
 - State exactly what a paid plan includes: report allowance, supported competitions, data freshness limits, saved history, export availability and what happens after the allowance is reached.
 - Never show a reference price, discount, countdown or member count unless it is true and evidenced.

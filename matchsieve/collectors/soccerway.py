@@ -179,37 +179,55 @@ class SoccerwayAdapter:
         return re.sub(r"\s+", " ", " ".join(parts)).strip().lower()
 
     @classmethod
-    def _expand_control_section_kind(cls, node: Any) -> str | None:
-        """Classify a load-more control by its nearest containing history section."""
-        # Walk upward from the button. Stop at the closest ancestor with one clear
-        # history label; if an ancestor contains both sections, do not guess.
+    def _expand_control_section_kind(cls, node: Any, page: Any) -> str | None:
+        """Classify expansion controls by nearest section and, where possible, team."""
+        home_team = away_team = ""
+        try:
+            pair = cls._teams_from_title(page.title() or "")
+            if pair:
+                home_team, away_team = pair[0].lower(), pair[1].lower()
+        except Exception:
+            pass
         for depth in range(1, 9):
             try:
                 ancestor = node.locator(f"xpath=ancestor::*[{depth}]")
                 text_value = re.sub(r"\s+", " ", (ancestor.inner_text(timeout=350) or "")).strip().lower()
                 if not text_value or len(text_value) > 10_000:
                     continue
-                has_team = any(word in text_value for word in ("last matches", "previous matches", "recent matches", "home form", "away form", "recent form"))
-                has_h2h = any(word in text_value for word in ("last meetings", "previous meetings", "head-to-head", "head to head", "direct meetings", "previous encounters"))
-                if has_team and not has_h2h:
-                    return "team_form"
-                if has_h2h and not has_team:
+                has_home = bool(home_team and home_team in text_value)
+                has_away = bool(away_team and away_team in text_value)
+                has_team_label = any(word in text_value for word in ("last matches", "previous matches", "recent matches", "home form", "away form", "recent form"))
+                has_h2h_label = any(word in text_value for word in ("last meetings", "previous meetings", "head-to-head", "head to head", "direct meetings", "previous encounters"))
+                if has_h2h_label and not has_team_label:
                     return "h2h_meetings"
+                if has_team_label and not has_h2h_label:
+                    if has_home and not has_away:
+                        return "home_team_last_matches"
+                    if has_away and not has_home:
+                        return "away_team_last_matches"
+                    return "team_form"
             except Exception:
                 continue
         return None
 
     @classmethod
     def _expand_history_panels(cls, page: Any, page_type: str, max_clicks: int = HISTORY_EXPANSION_CLICKS) -> dict[str, Any]:
-        """Expand team-form and direct-meeting sections separately, up to four times each."""
-        clicks = {"team_form": 0, "h2h_meetings": 0, "unclassified": 0}
+        """Expand each team's recent matches and direct H2H meetings separately."""
+        clicks = {
+            "home_team_last_matches": 0,
+            "away_team_last_matches": 0,
+            "team_form": 0,
+            "h2h_meetings": 0,
+            "unclassified": 0,
+        }
         warnings: list[str] = []
         if page_type != "h2h":
             return {"clicks": clicks, "warnings": warnings}
 
-        targets = ("team_form", "h2h_meetings")
+        targets = ("home_team_last_matches", "away_team_last_matches", "team_form", "h2h_meetings")
+        click_limit = max(0, min(int(max_clicks), HISTORY_EXPANSION_CLICKS))
         for target in targets:
-            for _ in range(max(0, min(int(max_clicks), HISTORY_EXPANSION_CLICKS))):
+            for _ in range(click_limit):
                 clicked = False
                 for selector in ("button", "a", "[role='button']", "summary"):
                     nodes = page.locator(selector)
@@ -218,7 +236,7 @@ class SoccerwayAdapter:
                         label = cls._expand_control_text(node)
                         if cls._label_kind(label) != "expand_history":
                             continue
-                        section_kind = cls._expand_control_section_kind(node)
+                        section_kind = cls._expand_control_section_kind(node, page)
                         if section_kind != target:
                             continue
                         try:
@@ -235,10 +253,8 @@ class SoccerwayAdapter:
                 if not clicked:
                     break
 
-        if clicks["team_form"] == 0:
-            warnings.append("No section-specific team-form expansion was verified; available form history may be limited.")
-        if clicks["h2h_meetings"] == 0:
-            warnings.append("No section-specific direct-meetings expansion was verified; available H2H history may be limited.")
+        if not any(clicks[key] for key in targets):
+            warnings.append("No section-specific history expansion could be verified; available history may be limited.")
         return {"clicks": clicks, "warnings": warnings}
 
     @staticmethod

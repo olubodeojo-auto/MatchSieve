@@ -220,6 +220,27 @@ class SoccerwayAdapter:
         return urlunparse((parsed.scheme, parsed.netloc, base_path, "", parsed.query, ""))
 
     @staticmethod
+    def validate_url(url: str) -> str:
+        """Validate a visible match URL. Accept locale-prefixed and /football/match/ routes."""
+        parsed = urlparse((url or "").strip())
+        host = (parsed.hostname or "").lower()
+        if parsed.scheme not in {"http", "https"} or not host:
+            raise ValueError("Match URL must be an absolute HTTP(S) URL.")
+        if host != "soccerway.com" and not host.endswith(".soccerway.com"):
+            raise ValueError("Only Soccerway match URLs are accepted.")
+        segments = [part for part in parsed.path.split("/") if part]
+        lower = [part.lower() for part in segments]
+        try:
+            index = max(i for i, value in enumerate(lower) if value in {"match", "game"})
+        except ValueError:
+            raise ValueError("URL must point to a Soccerway match/game page.") from None
+        if len(segments) < index + 3:
+            raise ValueError("Soccerway match URL does not contain both team identifiers.")
+        match_segments = segments[:index + 3]
+        base_path = "/" + "/".join(match_segments) + "/"
+        return urlunparse((parsed.scheme, parsed.netloc, base_path, "", parsed.query, ""))
+
+    @staticmethod
     def _base_and_identity(url: str) -> tuple[str, str]:
         base = SoccerwayAdapter.validate_url(url)
         p = urlparse(base)
@@ -394,7 +415,7 @@ class SoccerwayAdapter:
                     absolute = urljoin(source_url, href)
                     if not SoccerwayAdapter._is_match_url(absolute):
                         continue
-                    canonical = SoccerwayAdapter.validate_url(absolute)
+                    canonical = SoccerwayAdapter.validate_match_url(absolute)
                     if canonical in seen:
                         continue
                     label = re.sub(r"\s+", " ", (node.inner_text(timeout=500) or "").strip())

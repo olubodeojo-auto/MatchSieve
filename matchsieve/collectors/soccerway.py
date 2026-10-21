@@ -618,8 +618,10 @@ class SoccerwayAdapter:
                 for candidate in (dom.get("score") or []):
                     score = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", candidate["value"])
                     if score:
-                        match.setdefault("home_score", int(score.group(1)))
-                        match.setdefault("away_score", int(score.group(2)))
+                        if match.get("home_score") is None:
+                            match["home_score"] = int(score.group(1))
+                        if match.get("away_score") is None:
+                            match["away_score"] = int(score.group(2))
                         if match.get("home_score") is not None and match.get("away_score") is not None:
                             break
             if not match.get("kickoff"):

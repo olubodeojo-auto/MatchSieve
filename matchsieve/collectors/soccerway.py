@@ -280,6 +280,8 @@ class SoccerwayAdapter:
             if not cls._same_match(absolute, base):
                 continue
             ptype = cls._page_type(label, absolute, base)
+            # Keep the actual tab href including its query/session identifiers.
+            # Guessed route patterns are added only when the current page exposes no tab.
             if ptype and ptype not in found:
                 found[ptype] = {"page_type": ptype, "url": absolute, "link_label": label or ptype}
         parsed = urlparse(base)

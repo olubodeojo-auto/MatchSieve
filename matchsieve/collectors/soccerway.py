@@ -58,7 +58,7 @@ DOM_SELECTOR_GROUPS = {
         "[class*='awayTeam' i] [class*='name' i]", ".away .team-name",
         ".away-team a[href*='/team/']",
     ),
-    "team_names": ("[class*='team-name' i]", "[data-testid*='team-name' i]", "a[href*='/team/']"),
+    "team_names": ("[class*='team-name' i]", "[data-testid*='team-name' i]"),
     "score": ("[data-testid*='score' i]", "[class*='score' i]", "[class*='result' i]"),
     "kickoff": ("time[datetime]", "[data-testid*='kickoff' i]", "[class*='kickoff' i]", "[class*='match-date' i]"),
     "competition": (
@@ -340,6 +340,12 @@ class SoccerwayAdapter:
         return output
 
     def _capture_page(self, page: Any, response: Any, page_type: str, link_label: str) -> dict[str, Any]:
+        # Some tabs hydrate after DOMContentLoaded. A short, bounded settling
+        # period is safer than waiting for network-idle on a busy scores site.
+        try:
+            page.wait_for_timeout(650)
+        except Exception:
+            pass
         text = ""
         try:
             text = page.locator("body").inner_text(timeout=self.timeout_ms)
@@ -357,12 +363,6 @@ class SoccerwayAdapter:
             "verify you are human", "checking your browser", "captcha", "access denied",
             "unusual traffic", "temporarily blocked"
         ))
-        # Some tabs hydrate after DOMContentLoaded. A short, bounded settling
-        # period is safer than waiting for network-idle on a busy scores site.
-        try:
-            page.wait_for_timeout(650)
-        except Exception:
-            pass
         tables = self._table_rows(page)
         stats = self._stats_from_rows(tables)
         players = self._player_links(page) if page_type in {"lineups", "player_stats", "summary"} else []
@@ -591,7 +591,11 @@ class SoccerwayAdapter:
                     break
             if not match.get("competition"):
                 comp = dom.get("competition") or []
-                match["competition"] = comp[-1]["value"] if comp else cls._competition_from_page(item)
+                exact_competition = next(
+                    (x["value"] for x in comp if "/competition/" in x.get("selector", "")),
+                    None,
+                )
+                match["competition"] = exact_competition or (comp[-1]["value"] if comp else cls._competition_from_page(item))
             if not match.get("kickoff"):
                 times = dom.get("kickoff") or []
                 if times:

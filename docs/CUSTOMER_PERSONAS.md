@@ -10,14 +10,14 @@ MatchSieve is a football research desk, not a livescore replacement or a promise
 
 No persona insight below should be treated as fact until it is validated by observed behaviour and interviews.
 
-## Persona A — The Weekend Analyst (initial consumer beachhead)
+## Persona A — The Serious Independent Market Researcher (initial premium consumer beachhead)
 
 ### Situation and job
 - **Who:** an adult, English-speaking football researcher who regularly looks into fixtures, likely EPL-focused at launch.
 - **Typical moment:** researching several weekend fixtures, comparing goal or result markets, or trying to reconcile different pages before a match.
 - **Current workaround:** opens multiple score/stat pages, manually checks form or H2H, compares contradictory claims and tries to remember where each fact came from.
 - **Functional job:** organise the evidence relevant to the selected market without repeating the same research process across many tabs.
-- **Emotional job:** feel prepared and in control of the research process—not rushed into a choice or persuaded by loud claims.
+- **Emotional job:** feel prepared, independent and in control of the reasoning—not rushed into a choice or persuaded by somebody else's confidence. The product should offer confidence in the research process, never confidence in the eventual outcome.
 - **Identity:** wants to think of themselves as careful and independent, not someone who blindly copies tips.
 
 ### Psychographic hypotheses
@@ -27,12 +27,18 @@ No persona insight below should be treated as fact until it is validated by obse
 - May distrust AI-generated conclusions unless sources, sample sizes, missing inputs and counter-evidence are visible.
 
 ### Paying triggers to test
-1. They have several fixtures to research in one sitting.
-2. They use a sample report and can point to a specific section that saves them repeated cross-checking.
-3. They return in another match week and choose another market.
-4. They want a saved report/history rather than reconstructing the same research later.
+1. They have a real fixture and market question to research now.
+2. They inspect a real sample and can identify source-backed work that replaces repeated cross-checking.
+3. They research several fixtures in a session or return regularly in later match weeks.
+4. They value the evidence-for/evidence-against comparison and saved research history enough to justify a monthly membership.
 
-**Best first message:** “One match. One market question. The evidence in one place.”  
+**Emotional trigger to test:** “I can see the evidence, the case against it, and what is still missing. I can make my own judgement without relying on a sales pitch.”
+
+**Payment trigger to test:** the visitor has seen a reviewed sample, recognises a recurring research job, understands the 20-brief/month proposed limit and supported competitions, then completes a real £19/month UK pilot purchase and uses a second report. Clicks or verbal enthusiasm are not payment evidence.
+
+**Best first message:** “Stop guessing the odds. Examine the evidence.”  
+**Supporting line:** “One match. One market question. The evidence in one place.”  
+**Premium qualification:** “This is not for everyone. MatchSieve is for serious-minded adults who do their own research and value a disciplined process—not for people looking for guaranteed picks or a shortcut to profit.”  
 **CTA to test:** “Explore a sample report” on marketing pages; “Research a match” in the working product.
 
 ### Objections and how to answer honestly
@@ -119,7 +125,7 @@ If interviews reveal a desire for “sure wins”, do not treat it as a copy pro
 
 ## Interview script (8–12 adults for the first qualitative round)
 
-Do not reveal the proposed price or preferred solution until after the first five questions.
+Do not reveal the proposed price or preferred solution until after the first five questions. Then, only after the report and limits are ready to be truthfully shown, test one premium UK pilot offer; do not test the retired economy credit-pack ladder.
 
 1. Think about the last match you researched. Take me through exactly what you did.
 2. Which pages/apps did you use and why?
@@ -130,8 +136,8 @@ Do not reveal the proposed price or preferred solution until after the first fiv
 7. What would make you distrust a research report?
 8. Show a real, reviewed MatchSieve sample. What is useful, confusing, missing or unbelievable?
 9. What would have to change in your workflow for you to use this next week?
-10. Would you prefer a defined report-credit pack or monthly pass? Why? Treat the answer as a hypothesis.
-11. When the checkout and product are genuinely ready, offer a real paid pilot. Observe the action, not only the stated intention.
+10. After viewing the report and understanding its exact limits, what would make a £19/month research membership worthwhile—or not worthwhile—for your actual usage?
+11. When the product and checkout are genuinely ready, offer a real paid pilot at the stated terms. Observe completed payment, first-use behaviour and later repeat use, not only stated intention.
 12. For publishers: show how they currently prepare one preview; ask which source record or output format would fit their process.
 
 Record consented notes, anonymise names, and separate verbatim statements from interpretation. Do not call interview statements purchase intent.

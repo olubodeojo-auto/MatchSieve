@@ -614,7 +614,7 @@ class SoccerwayAdapter:
                         if score_value:
                             match[score_field] = int(score_value.group(1))
                             break
-            if match.get("home_score") is None or match.get("away_score") is None:
+            if match.get("home_score") is None and match.get("away_score") is None:
                 for candidate in (dom.get("score") or []):
                     score = re.search(r"(?<!\d)(\d{1,2})\s*[-–:]\s*(\d{1,2})(?!\d)", candidate["value"])
                     if score:
@@ -642,7 +642,7 @@ class SoccerwayAdapter:
                 venue = re.search(r"\b(?:Venue|Stadium)\s*:?\s*([^\n]{2,100})", body_text, re.I)
                 if venue:
                     match["venue"] = venue.group(1).strip()
-            if match.get("home_score") is None or match.get("away_score") is None:
+            if match.get("home_score") is None and match.get("away_score") is None:
                 for row in item.get("table_rows", []):
                     cells = row.get("cells") or []
                     if len(cells) == 1:

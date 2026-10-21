@@ -76,6 +76,7 @@ node --check web/app.js
 - [`docs/COPY_BANK.md`](docs/COPY_BANK.md) — generic and persona-specific copy, objection handling, lifecycle copy and claims guardrails.
 - [`docs/CONVERSION_EXPERIMENTS.md`](docs/CONVERSION_EXPERIMENTS.md) — measurable headline, sample-report, segment, price and activation experiments.
 - [`docs/PRODUCT_STRATEGY.md`](docs/PRODUCT_STRATEGY.md) — product promise and strategic boundaries.
+- [`docs/SOCCERWAY_ADAPTER.md`](docs/SOCCERWAY_ADAPTER.md) — first-class Soccerway page discovery, selector-based extraction, local archive, limitations and acceptance checklist.
 - [`docs/LAUNCH_PLAN.md`](docs/LAUNCH_PLAN.md) — initial 30-day commercial validation plan.
 - [`docs/WEB_CUSTOMER_JOURNEY.md`](docs/WEB_CUSTOMER_JOURNEY.md) — first-visit, returning-user, empty-data and error journeys.
 - [`docs/MOBILE_CUSTOMER_JOURNEY.md`](docs/MOBILE_CUSTOMER_JOURNEY.md) — proposed mobile customer flow and API behaviour.

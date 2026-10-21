@@ -16,7 +16,7 @@ from .reporting import generate_report
 from .repository import Repository
 
 WEB = ROOT / "web"
-WEB_ASSETS = {"index.html", "app.js", "style.css"}
+WEB_ASSETS = {"index.html", "app.js", "style.css", "funnel-preview.html"}
 MARKET_ORDER = ["UNDER_4_5", "OVER_2_5", "BTTS", "UNDER_3_5", "DOUBLE_CHANCE", "RESULT_1X2", "RESEARCH_BRIEF"]
 
 

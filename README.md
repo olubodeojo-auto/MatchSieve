@@ -62,7 +62,7 @@ node --check web/app.js
 
 ## Funnel design and monetisation
 
-- [`docs/UNIVERSAL_FUNNEL_MAP.md`](docs/UNIVERSAL_FUNNEL_MAP.md) — the universal journey, Persona A/B/C entry paths, lead magnet, tripwire, subscription, publisher upsell, thank-you and payment-state flows, geography, platform policy gates and automation.
+- [`docs/UNIVERSAL_FUNNEL_MAP.md`](docs/UNIVERSAL_FUNNEL_MAP.md) — the universal journey, Persona A/B/C entry paths, playbook lead magnet, premium UK membership, future publisher consideration, thank-you and payment-state flows, geography and platform-policy gates.
 - [`web/funnel-preview.html`](web/funnel-preview.html) — interactive design preview for landing, opt-in, lead thank-you, offer, checkout, paid thank-you, pending and failed payment pages. It is a visual prototype only: no lead details are sent or saved and no payments or entitlements are processed.
 - Local preview URL after starting the existing server: `http://127.0.0.1:8765/funnel-preview.html`.
 - The current commercial hypothesis is one premium UK-first Research Desk membership at £19/month, with a proposed ceiling of 20 full research briefs per billing month. This is a pilot hypothesis, not a validated price or live offer. No economy packs, matchday passes or non-UK prices are part of launch. Do not activate it until representative reports, data rights, the exact processor/product category, secure entitlements and contribution margin are checked.

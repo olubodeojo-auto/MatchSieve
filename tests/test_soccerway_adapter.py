@@ -60,6 +60,34 @@ class SoccerwayAdapterTests(unittest.TestCase):
         self.assertEqual(SoccerwayAdapter(max_pages=500).max_pages, 9)
         self.assertEqual(SoccerwayAdapter(max_pages=0).max_pages, 1)
 
+    def test_aggregate_keeps_zero_zero_score_and_time_basis_explicit(self):
+        pages = [{
+            "page_type": "summary",
+            "title": "Alpha v Beta | Soccerway",
+            "headings": ["Alpha v Beta"],
+            "text": "League Match",
+            "dom_fields": {
+                "home_team": [{"value": "Alpha", "selector": "[data-testid*='home-team' i]"}],
+                "away_team": [{"value": "Beta", "selector": "[data-testid*='away-team' i]"}],
+                "competition": [{"value": "Premier Division", "selector": "a[href*='/competition/']"}],
+                "kickoff": [{"value": "2026-10-21T14:00:00+01:00", "selector": "time[datetime]"}],
+                "score": [{"value": "0 - 0", "selector": "[class*='score' i]"}],
+                "venue": [{"value": "North Ground", "selector": "[class*='venue' i]"}],
+            },
+            "table_rows": [],
+            "statistics": {},
+            "players": [],
+            "events": [],
+            "json_ld": [],
+        }]
+        result = SoccerwayAdapter._aggregate(pages, "https://www.soccerway.com/match/alpha-id/beta-id/")
+        self.assertEqual(result["match"]["home_team"], "Alpha")
+        self.assertEqual(result["match"]["away_team"], "Beta")
+        self.assertEqual(result["match"]["home_score"], 0)
+        self.assertEqual(result["match"]["away_score"], 0)
+        self.assertEqual(result["match"]["kickoff"], "2026-10-21T14:00:00+01:00")
+        self.assertIn("timezone not confirmed", result["match"]["kickoff_time_basis"])
+
 
 if __name__ == "__main__":
     unittest.main()

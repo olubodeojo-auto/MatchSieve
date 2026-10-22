@@ -101,6 +101,71 @@ class SoccerwayAdapterTests(unittest.TestCase):
             "https://ng.soccerway.com/match/como-ttyLthOA/manchester-united-ppjDR086/"
         ))
 
+
+    def test_fixture_parser_keeps_separate_fixtures_and_competition_heading(self):
+        class FakeLocator:
+            def __init__(self, data=None, text="", attrs=None, descendants=None, ancestors=None):
+                self.data = data or []
+                self.text = text
+                self.attrs = attrs or {}
+                self.descendants = descendants or {}
+                self.ancestors = ancestors or {}
+                self.first = self
+
+            def count(self):
+                return len(self.data) if self.data else (1 if self.text or self.attrs else 0)
+
+            def nth(self, i):
+                return self.data[i]
+
+            def get_attribute(self, name):
+                return self.attrs.get(name)
+
+            def inner_text(self, timeout=None):
+                return self.text
+
+            def locator(self, selector):
+                if selector.startswith("xpath=ancestor::"):
+                    return self.ancestors.get(selector, FakeLocator())
+                return self.descendants.get(selector, FakeLocator())
+
+        class FakePage:
+            def __init__(self, links):
+                self.links = links
+            def locator(self, selector):
+                if selector == "a[href*='/match/'],a[href*='/game/']":
+                    return FakeLocator(self.links)
+                return FakeLocator()
+
+        def card(url, label, text, heading="Premier League - Round 9"):
+            link = FakeLocator(text=label, attrs={"href": url})
+            card_container = FakeLocator(
+                text=text,
+                descendants={"a[href*='/match/'],a[href*='/game/']": FakeLocator([link]),
+                             "a[href*='/team/']": FakeLocator()},
+                ancestors={"xpath=ancestor::*[1]": FakeLocator(text=text)},
+            )
+            # The link has one compact card as its first ancestor.
+            link.ancestors["xpath=ancestor::*[1]"] = card_container
+            card_container.ancestors["xpath=preceding::*[self::h1 or self::h2 or self::h3 or self::h4 or @role='heading'][1]"] = FakeLocator(text=heading)
+            return link
+
+        first = card("/match/alpha-id/beta-id/", "Alpha v Beta", "Premier League - Round 9 17:45 Alpha 2 - 0 Beta")
+        second = card("/match/gamma-id/delta-id/", "Gamma v Delta", "Premier League - Round 9 20:00 Gamma - Delta")
+        fixtures = SoccerwayAdapter._extract_fixture_rows(
+            FakePage([first, second]), "https://ng.soccerway.com/", max_fixtures=10
+        )
+        self.assertEqual(len(fixtures), 2)
+        self.assertEqual([(x["home_team"], x["away_team"]) for x in fixtures],
+                         [("Alpha", "Beta"), ("Gamma", "Delta")])
+        self.assertEqual(fixtures[0]["competition"], "Premier League - Round 9")
+        self.assertEqual(fixtures[0]["score"], {"home": 2, "away": 0})
+        self.assertEqual(fixtures[1]["kickoff_display"], "20:00")
+
+    def test_flashscore_mobi_domain_is_not_allowed_for_soccerway_adapter(self):
+        with self.assertRaises(ValueError):
+            SoccerwayAdapter.validate_match_list_url("https://www.flashscore.mobi/")
+
     def test_page_limit_is_bounded(self):
         self.assertEqual(SoccerwayAdapter(max_pages=500).max_pages, 9)
         self.assertEqual(SoccerwayAdapter(max_pages=0).max_pages, 1)

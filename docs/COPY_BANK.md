@@ -2,7 +2,7 @@
 
 **Purpose:** Working copy for product experiments. Copy here is not evidence of conversion and must be tested with real adult users.  
 **Brand voice:** calm, sharp, plain English, evidence-led. Confident about the process; honest about uncertainty.  
-**Primary message:** Choose a fixture and a market question. Get the available evidence in one readable brief.  
+**Primary message:** Stop guessing the odds. Examine the evidence. MatchSieve is for serious-minded adults who value research, traceable sources and reasoning on both sides.  
 **Primary action for the product workspace:** Research a match.  
 **Primary action for a future public marketing page:** Explore a sample report.
 
@@ -12,7 +12,7 @@
 MatchSieve organises available football data around the fixture and market question you choose, showing supporting signals, counter-evidence, sources and missing information in one readable research brief.
 
 **Short descriptor**  
-Football research, without the noise.
+Premium football research for people who value evidence.
 
 **Core difference from free score/stat sites**  
 Scores and raw statistics are ingredients. MatchSieve's proposed paid value is the market-specific organisation of available evidence, the explicit presentation of evidence against a convenient conclusion, and a source trail that makes gaps visible.
@@ -28,16 +28,19 @@ Do not say “live”, “real time”, “complete”, “verified”, “indep
 ## 2. Recommended generic homepage copy
 
 **Eyebrow**  
-EVIDENCE FIRST. NO FORCED PICKS.
+FOR SERIOUS-MINDED FOOTBALL RESEARCHERS
 
 **Headline**  
-One match. One market question. The evidence in one place.
+Stop guessing the odds. Examine the evidence.
 
 **Supporting copy**  
-Stop stitching together scattered stats. Choose a fixture and a market question; MatchSieve organises the available evidence into a plain-English brief showing what supports the market, what challenges it, where the information came from and what is missing.
+MatchSieve is a football research desk for adults who value evidence more than noise. Choose a fixture and a market question; inspect the case for it, the case against it, the source notes and what the available records cannot verify.
+
+**Qualification line**  
+This is not for everyone. MatchSieve is for people who do their own research and value a disciplined process. It is not a tipster club, a sure-win service or a shortcut to profit.
 
 **Primary CTA**  
-Explore a sample report
+Explore a reviewed sample report
 
 **Secondary CTA for the working research app**  
 Research a match
@@ -59,21 +62,21 @@ MatchSieve is a research aid, not a promise of a result. Where evidence is incom
 
 ## 3. Persona-specific landing copy
 
-### Persona A — The Weekend Analyst
+### Persona A — The Serious Independent Market Researcher
 
 **Visitor state:** has already searched several sites; needs a better way to organise relevant facts.
 
-**Headline option A (problem-led)**  
-Stop piecing together football stats.
+**Headline option A (premium position)**  
+Stop guessing the odds. Examine the evidence.
 
 **Supporting copy**  
-Bring the available evidence for your chosen fixture and market into one brief. See the supporting signals, counter-evidence, source notes and missing information without pretending the unknowns are settled.
+MatchSieve organises available information around your chosen fixture and market, showing what supports the case, what challenges it and what remains unverified. The report should make the reasoning inspectable rather than sell certainty.
 
 **Headline option B (mechanism-led)**  
-One fixture. One market. A clearer research brief.
+One match. One market question. The evidence in one place.
 
 **CTA**  
-Build a market brief
+Inspect a sample research brief
 
 **Follow-up microcopy**  
 Start with the match you are already researching.
@@ -144,24 +147,27 @@ Illustrative research sample. This is a snapshot of the data recorded for the st
 
 Only use that sample note when it matches the actual sample. If synthetic/demo data are used, label it prominently as fictional and never imply the facts describe a real match. Better for commercial validation: create a real, manually reviewed historical example with permitted sources and exact timestamps.
 
-## 5. Pricing and conversion copy — placeholders only until billing is live
+## 5. Premium positioning and pricing copy — placeholders until billing is live
 
 **Plan heading**  
-Research more than one match? Choose a plan that fits how you work.
+The MatchSieve Research Desk
+
+**Price hypothesis**  
+£19/month for one premium UK-first membership, with a proposed limit of up to 20 full research briefs per billing month. This is an estimate to test, not validated willingness-to-pay and not a live offer. Other countries remain closed until separate research and payment approval.
 
 **Pricing support**  
-Every plan should state the included report allowance, supported competitions, data/update limitations, saved-history features, export access and the fair-use rule before checkout.
+State the supported competitions, report allowance, source/freshness limits, archive features, renewal and cancellation terms before checkout. Do not use tiny credit packs, matchday passes or a cheaper tier in the initial premium launch.
 
 **Button**  
-Choose this plan
+Review Research Desk membership
 
 **Billing confirmation language to use only when true**  
-£[price] per month. Renews monthly. Includes [defined allowance]. Manage or cancel from [actual account location]. Your access continues until [precise policy]. 
+£19 per month. Renews monthly until cancelled. Includes up to 20 full research briefs in the billing month and the supported competition set listed here. Manage or cancel from [actual account location].
 
-Do not ship this copy with bracketed fields. Do not claim “cancel anytime” unless users can actually cancel without contacting support or navigating a dark pattern. Do not start a paid subscription after a free sample without clear, informed consent.
+Do not ship this copy until the allowance is implemented, payment provider/category and seller-country eligibility are confirmed, verified webhooks and server-side entitlements work, and cancellation/refund terms are accurate. Do not claim “cancel anytime” unless users can actually cancel without contacting support or navigating a dark pattern.
 
-**Pricing test**
-Test £7, £8 and £10 monthly offers only after the plan's allowance, payment, entitlement enforcement, renewal and cancellation are implemented. Keep the included product constant across price cohorts. Record actual payment, refund and later renewal—not survey-only willingness.
+**Commercial validation**  
+Use one clear £19/month offer after showing a real, reviewed report. Measure completed purchases, report use, repeat usage, refunds and renewals. Compliments, clicks and stated willingness are not sales. Do not introduce a cheap package merely because unqualified visitors decline the premium offer.
 
 ## 6. Objection handling
 

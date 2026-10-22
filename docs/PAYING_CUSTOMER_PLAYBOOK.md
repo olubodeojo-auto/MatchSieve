@@ -42,7 +42,7 @@ These are product principles and hypotheses, not guaranteed conversion hacks. Th
 
 ### What the three audiences value
 
-| Dimension | A — Weekend Analyst | B — Critical Comparator | C — Football Publisher |
+| Dimension | A — Serious Independent Researcher | B — Critical Comparator | C — Football Publisher |
 |---|---|---|---|
 | Core motive | Preparedness and time saved | Independence and intellectual honesty | Credibility and reliable output under deadline |
 | Wants to feel | Informed, organised, not rushed | Hard to mislead | Professional and well prepared |
@@ -51,6 +51,11 @@ These are product principles and hypotheses, not guaranteed conversion hacks. Th
 | Strongest buying moment to test | Researching several fixtures in one sitting | A claim conflicts with the underlying record | Preparing a preview, show or community post |
 | Repeat-use reason | Regular match-week workflow | Regularly evaluates different markets | Frequent publishing deadlines |
 | Main uncertainty | “Is the output better than doing it myself?” | “Is this another disguised tipster?” | “Will it fit my workflow and save enough time?” |
+
+
+- **Emotional trigger to validate:** “I can inspect the evidence, the case against it and the missing pieces. I can make my own judgement rather than rely on a stranger's confidence.”
+- **Payment trigger to validate:** a serious adult researcher has a real fixture/market question, sees a real reviewed report that visibly replaces repeated cross-checking, understands the coverage/allowance and buys the £19/month UK pilot; second-report use and renewal are stronger evidence than compliments or clicks.
+- **Positioning qualification:** “This is not for everyone. MatchSieve is for serious-minded adults who do their own research and value a disciplined process—not a tipster club, a sure-win service or a shortcut to profit.”
 
 ### Buying triggers: distinguish attention from willingness to pay
 
@@ -98,7 +103,7 @@ Ask satisfied customers to share a sample or refer someone only after they have 
 
 ## Offer design and pricing guardrails
 
-- Current UK price hypothesis: test £7, £8 and £10 per month only once the checkout, plan limits and cancellation flow are ready. These prices are unvalidated.
+- Current UK price hypothesis: one Research Desk membership at £19/month with a proposed cap of 20 full research briefs per billing month. It is not validated and not live. The previous £7/£8/£10 ladder, cheap credit packs and matchday pass are retired from launch.
 - Do not call a subscription “unlimited” until API/data costs and rate limits are measured.
 - State exactly what a paid plan includes: report allowance, supported competitions, data freshness limits, saved history, export availability and what happens after the allowance is reached.
 - Never show a reference price, discount, countdown or member count unless it is true and evidenced.

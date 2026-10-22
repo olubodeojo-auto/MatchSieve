@@ -78,29 +78,29 @@ Do not maximise paid conversion at the expense of comprehension, honest expectat
 ### Experiment 3 — Persona A versus Persona C message
 **Hypothesis:** the publisher's repeated deadline and source-attribution job may create a stronger repeat-use case than general researcher messaging.
 
-- **A page:** “One match. One market question. The evidence in one place.” CTA: “Explore a sample report”.
+- **A page:** “Stop guessing the odds. Examine the evidence.” CTA: “Explore a reviewed sample report”.
 - **C page:** “Research the match. Keep the sources. Make the argument yours.” CTA: “Review a sample research brief”.
 - **Audience:** adult visitors recruited for the stated job, not simply broad football-interest clicks.
 - **Primary measure:** qualified research starts and return within 7 days.
 - **Secondary measures:** whether publishers need export, multiple fixtures, source citation and commercial redistribution rights.
 - **Decision:** if C shows stronger repeated use, build the smallest validated publisher workflow before a separate creator plan. Do not infer product-market fit from one enthusiastic creator.
 
-### Experiment 4 — Price test
-**Prerequisites:** functioning payment account, actual subscription/entitlement service, clear limits, customer support/refund path and a working cancellation path. Until then, use interviews or non-binding interest forms and call them leads, not sales.
+### Experiment 4 — Premium £19/month UK pilot
+**Prerequisites:** a reviewed real sample report, defined supported competition set, actual subscription/entitlement service, functioning and approved payment account, clear limits, support/refund route and working cancellation path. Before these exist, use interviews and non-binding interest forms only; call them leads, not sales.
 
-- **Variants:** £7, £8 and £10 monthly, with identical plan contents and transparent terms.
-- **Audience:** comparable cohorts in the same market and period. Do not secretly show different prices to the same person or use fake reference prices.
-- **Primary measures:** completed paid checkout per qualified visitor and first renewal.
-- **Guardrails:** payment failure, refunds, customer support, early cancellation and gross margin.
-- **Decision:** price is not the winner solely because it has the highest initial checkout rate. Prefer the price with sustainable contribution margin and acceptable renewal/complaint behaviour.
+- **Offer:** one UK Research Desk membership at £19/month, with a proposed limit of up to 20 full research briefs per billing month. No cheaper trial pack, matchday pass or hidden discount at launch.
+- **Audience:** adult UK visitors who match the serious independent researcher or show a real repeat research/publishing job.
+- **Primary measures:** completed paid checkout per qualified visitor, first report completion, second report use and first renewal.
+- **Guardrails:** payment failure, refunds, early cancellation, complaints, support load and contribution margin after processing, tax, data and attributable infrastructure costs.
+- **Decision:** do not interpret clicks, wait-list sign-ups or praise as willingness-to-pay. Keep the offer only if real purchases, use and repeat behaviour support the unit economics. If it underperforms, examine audience fit, product proof, source coverage and checkout before reflexively lowering price.
 
-### Experiment 5 — Subscription versus usage credits
-**Question:** do regular researchers prefer predictable monthly access or a limited number of paid reports?
+### Experiment 5 — Repeat-use and allowance fit (no economy tier)
+**Question:** does the proposed 20-brief monthly allowance fit the recurring job of the premium customer?
 
-- **Prerequisite:** both offers must be deliverable and clear. Do not advertise a credit pack until credits are implemented.
-- **Measure:** actual purchase, repeat purchase and cost-to-serve—not stated preference alone.
-- **Segment:** occasional researchers may prefer credits; high-frequency users may prefer a pass, but this is a hypothesis.
-- **Decision:** serve both only if the added complexity is justified by real demand.
+- **Prerequisite:** usage must be measured on a functioning product; do not promise the allowance before it is enforced.
+- **Measure:** reports started/completed, repeated cross-checking avoided as described by users, proportion of members approaching the allowance, renewals, cancellations and cost-to-serve.
+- **Segment:** serious independent researchers first; publishers are interviewed separately and are not promised a publisher tier.
+- **Decision:** refine the premium allowance only when actual usage and costs justify it. Do not add credits or a low-cost offer just to capture unqualified price shoppers.
 
 ### Experiment 6 — First-use activation
 **Hypothesis:** a short, guided first run with a sample report and plain-language market descriptions will improve first-report completion without hiding uncertainty.

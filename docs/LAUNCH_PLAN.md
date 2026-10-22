@@ -1,9 +1,9 @@
 # 30-Day Commercial Validation Plan — updated 20 October 2026
 
-Current hypothesis: launch a market-specific football research subscription for adult, English-speaking UK users first, likely EPL-focused. Test £7 / £8 / £10 monthly price points; treat all prices and the market choice as unvalidated. Keep the US, Canada, wider Europe and Australia as later country-by-country expansion candidates. Social media scheduling and ad spend are deferred.
+Current hypothesis: launch one premium, market-specific football research subscription for serious-minded adult UK users first, with the English Premier League as an initial coverage candidate. Proposed price: £19/month with a limit of up to 20 full research briefs per billing month. This is not validated or live. Retire the old £7 / £8 / £10 ladder and all cheap credit/matchday ideas from launch. Keep other countries closed until country-specific demand, source rights, payment eligibility, taxes and costs are reviewed.
 
 ## Days 1–7: persona validation
-- Interview 10–15 adult users who actually research football matches, including Persona A and Persona C publishers.
+- Interview 8–12 adult users who actually research football matches, prioritising the Serious Independent Market Researcher and including a smaller group of critical comparators and publishers.
 - Ask what they do today, how much time they spend, what they currently pay for, and what makes a source trustworthy.
 - Do not assume Persona B is unwilling to pay just because free statistics exist; test if the objection is price, trust, habit or unclear differentiation.
 
@@ -15,7 +15,7 @@ Current hypothesis: launch a market-specific football research subscription for 
 
 ## Days 15–21: paid offer
 - Create a basic landing page with one real sample report and clear limits.
-- Test £7 / £8 / £10 monthly offers with a real checkout only after the Stripe/account route is confirmed.
+- Offer a single £19/month UK pilot only after a real reviewed report, named competition coverage, enforced allowance, approved checkout, verified server-side entitlements and cancellation/refund routes are ready. Measure completed payment, first report, second report and renewal before changing price.
 - If billing setup is still unresolved, collect expressions of interest or interview commitments; do not represent these as paying demand.
 
 ## Days 22–30: small paid pilot

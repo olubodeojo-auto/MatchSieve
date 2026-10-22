@@ -54,50 +54,12 @@ class DataCollectionAgent:
         return facts
 
     def collect_soccerway_page(self, url: str, timeout_ms: int = 30000) -> dict[str, Any]:
-        """Capture visible match-page text and likely same-host detail tabs with Playwright.
-        Does not bypass access controls, logins, CAPTCHAs or rate limits. Raw text is not verified data.
+        """Compatibility entry point backed by the first-class Soccerway adapter.
+
+        The adapter discovers known tabs, extracts structured match/stat/event data,
+        preserves raw source snapshots, and returns a pipeline-ready evidence record.
+        It never bypasses access controls or treats missing data as zero.
         """
-        parsed = urlparse(url)
-        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ValueError("url must be an absolute HTTP(S) URL")
-        try:
-            from playwright.sync_api import sync_playwright
-        except ImportError as exc:
-            raise RuntimeError("Playwright is optional; install playwright and its Chromium browser locally.") from exc
-        pages, errors = [], []
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.set_default_timeout(timeout_ms)
-            try:
-                response = page.goto(url, wait_until="domcontentloaded")
-                pages.append({"url":page.url,"http_status":response.status if response else None,
-                              "captured_at":utc_now(),"title":page.title(),
-                              "text":page.locator("body").inner_text()[:150000]})
-                host = urlparse(url).netloc
-                links = page.locator("a[href]")
-                seen = {page.url}
-                for i in range(min(links.count(), 250)):
-                    link = links.nth(i)
-                    try:
-                        href = link.get_attribute("href") or ""
-                        label = (link.inner_text(timeout=1200) or "").strip()
-                        absolute = page.evaluate("(href) => new URL(href, location.href).href", href)
-                        purl = urlparse(absolute)
-                        token = (label + " " + purl.path).lower()
-                        relevant = any(x in token for x in ("lineup","line-up","statistics","head-to-head","h2h","commentary","events","match"))
-                        if purl.netloc != host or absolute in seen or not relevant:
-                            continue
-                        seen.add(absolute)
-                        r = page.goto(absolute, wait_until="domcontentloaded")
-                        pages.append({"url":page.url,"http_status":r.status if r else None,"captured_at":utc_now(),
-                                      "title":page.title(),"link_label":label,"text":page.locator("body").inner_text()[:100000]})
-                        if len(pages) >= 12:
-                            break
-                    except Exception as exc:
-                        errors.append(f"Tab capture skipped: {type(exc).__name__}: {exc}")
-            finally:
-                browser.close()
-        return {"agent":self.name,"source":"soccerway_playwright","source_url":url,"captured_at":utc_now(),
-                "pages":pages,"records_collected":len(pages),"errors":errors,
-                "status":"success" if pages else "failed","authority":"raw_page_capture_only"}
+        from ..collectors.soccerway import SoccerwayAdapter
+
+        return SoccerwayAdapter(timeout_ms=timeout_ms).collect(url)

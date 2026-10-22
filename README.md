@@ -1,6 +1,6 @@
 # MatchSieve
 
-MatchSieve is the football research and intelligence platform being developed from the earlier BojoSentinelAI source. The repository preserves the original analysis engines, extractors and provider integrations while the root project establishes a tested, local-first data-ingestion and reporting foundation.
+MatchSieve is a premium, evidence-led football research desk being developed from the earlier BojoSentinelAI source. It is for serious-minded adult researchers who value traceable reasoning over tipster hype. The repository preserves the original analysis engines, extractors and provider integrations while the root project establishes a local-first data-ingestion and reporting foundation.
 
 ## Project setup
 
@@ -11,6 +11,39 @@ MatchSieve is the football research and intelligence platform being developed fr
 - **Supabase region:** Frankfurt (`eu-central-1`)
 
 The Supabase project is newly created. No schema or data has been migrated into it yet. The root foundation uses a local SQLite archive for its initial offline-first workflow; do not point production data at Supabase until the schema and migration plan have been reviewed.
+
+## Collect the daily Soccerway fixture list and a selected match
+
+The dedicated `matchsieve.collectors.soccerway.SoccerwayAdapter` is a source-specific collection adapter. The intended workflow is **date/matches page → complete visible fixture list → selected match → actual tabs and available history**. It preserves source URLs and page context, and marks missing fields instead of filling them with guesses. It stops on access denial, CAPTCHA or rate limiting.
+
+Install Playwright and Chromium once:
+
+```powershell
+python -m pip install playwright
+python -m playwright install chromium
+```
+
+First, collect the day/list page and save the visible fixture list:
+
+```powershell
+python scripts/collect_soccerway.py --date-url "https://ng.soccerway.com/"
+```
+
+For a specific date, use the actual date/list URL copied from Soccerway when available:
+
+```powershell
+python scripts/collect_soccerway.py --date-url "PASTE-ACTUAL-SOCCERWAY-DAY-URL"
+```
+
+Review the numbered fixtures and then collect the chosen match by its actual URL:
+
+```powershell
+python scripts/collect_soccerway.py --match-url "https://ng.soccerway.com/match/home-team-id/away-team-id/"
+```
+
+Or use `--match-index N` alongside `--date-url` to collect one fixture from that captured list. This index is only valid for the exact list just collected; the actual match URL is the stable identity.
+
+The collector attempts the visible match tabs and separately records team recent-match history and direct H2H meetings when clear section boundaries exist. It attempts first-half/second-half stats only when the Stats page exposes explicit controls. It does not guarantee 30 recent games per team, 15 H2H meetings, or period metrics when the source doesn't publish them or the page DOM cannot be confidently classified. All output must be reviewed before using it for research. It has not yet been validated against a controlled set of live fixture-list/H2H/Stats pages or integrated into the live report flow. Commercial source-use rights must be cleared before selling reports built from source data.
 
 ## Run the local research desk
 
@@ -43,11 +76,11 @@ node --check web/app.js
 
 ## Funnel design and monetisation
 
-- [`docs/UNIVERSAL_FUNNEL_MAP.md`](docs/UNIVERSAL_FUNNEL_MAP.md) — the universal journey, Persona A/B/C entry paths, lead magnet, tripwire, subscription, publisher upsell, thank-you and payment-state flows, geography, platform policy gates and automation.
+- [`docs/UNIVERSAL_FUNNEL_MAP.md`](docs/UNIVERSAL_FUNNEL_MAP.md) — the universal journey, Persona A/B/C entry paths, playbook lead magnet, premium UK membership, future publisher consideration, thank-you and payment-state flows, geography and platform-policy gates.
 - [`web/funnel-preview.html`](web/funnel-preview.html) — interactive design preview for landing, opt-in, lead thank-you, offer, checkout, paid thank-you, pending and failed payment pages. It is a visual prototype only: no lead details are sent or saved and no payments or entitlements are processed.
 - Local preview URL after starting the existing server: `http://127.0.0.1:8765/funnel-preview.html`.
-- Current proposed UK display values are hypotheses only: £2.99 one-off pack, £7.99/month Researcher and £19/month future Publisher pilot. Do not ship these as live prices until product limits and unit economics are measured and the payment provider approves the exact product category.
-- The page allows switching persona messages and market preview paths. Non-UK regions are not approved launches; the preview displays “price not set” for those markets.
+- The current commercial hypothesis is one premium UK-first Research Desk membership at £19/month, with a proposed ceiling of 20 full research briefs per billing month. This is a pilot hypothesis, not a validated price or live offer. No economy packs, matchday passes or non-UK prices are part of launch. Do not activate it until representative reports, data rights, the exact processor/product category, secure entitlements and contribution margin are checked.
+- The page allows switching persona messages and market preview paths. Non-UK regions are closed for this launch and display “price not set”. The offer is designed for people who value research, not for everyone.
 - Payment/processor approval is a launch gate. Payhip, Gumroad and Stripe all publish restrictions relevant to gambling or sports-forecasting products. Obtain a written assessment for MatchSieve's exact offer before using a checkout.
 
 ## Product, customer and conversion work
@@ -57,6 +90,7 @@ node --check web/app.js
 - [`docs/COPY_BANK.md`](docs/COPY_BANK.md) — generic and persona-specific copy, objection handling, lifecycle copy and claims guardrails.
 - [`docs/CONVERSION_EXPERIMENTS.md`](docs/CONVERSION_EXPERIMENTS.md) — measurable headline, sample-report, segment, price and activation experiments.
 - [`docs/PRODUCT_STRATEGY.md`](docs/PRODUCT_STRATEGY.md) — product promise and strategic boundaries.
+- [`docs/SOCCERWAY_ADAPTER.md`](docs/SOCCERWAY_ADAPTER.md) — first-class Soccerway page discovery, selector-based extraction, local archive, limitations and acceptance checklist.
 - [`docs/LAUNCH_PLAN.md`](docs/LAUNCH_PLAN.md) — initial 30-day commercial validation plan.
 - [`docs/WEB_CUSTOMER_JOURNEY.md`](docs/WEB_CUSTOMER_JOURNEY.md) — first-visit, returning-user, empty-data and error journeys.
 - [`docs/MOBILE_CUSTOMER_JOURNEY.md`](docs/MOBILE_CUSTOMER_JOURNEY.md) — proposed mobile customer flow and API behaviour.

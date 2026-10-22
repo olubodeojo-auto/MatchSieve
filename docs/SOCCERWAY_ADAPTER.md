@@ -109,4 +109,4 @@ Replace the placeholder with the actual printed filename. The runner is an isola
 - [ ] Verify commercial-use rights/data licensing before paid publication
 - [ ] Integrate archived records and the agent pipeline into the existing report repository without discarding the legacy evidence calculations
 
-This is a structured first version, not a claim that all current live Soccerway DOM variants have been validated. Current site layouts can change, so a controlled fixture set and the offline tests are required before relying on it for paid reports.
+This is a structured first version, not a claim that all current live Soccerway DOM variants have been validated. Current site layouts can change, so a controlled fixture set and the offline tests are required before relying on it for paid reports. The collector has also been tightened to prefer the actual main match list and ignore match links in navigation, footer and sidebar blocks.

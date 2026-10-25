@@ -6,8 +6,40 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from matchsieve.agents.pipeline import MatchSieveAgentPipeline
+from matchsieve.agents.data_collection import DataCollectionAgent
 from matchsieve.kb_writer import refresh_indexes
 from matchsieve.repository import Repository
+
+
+class CollectionAgentTests(unittest.TestCase):
+    def test_collection_preserves_raw_payload_and_source_provenance(self):
+        agent = DataCollectionAgent()
+        payload = {
+            "home_team": "Alpha FC",
+            "away_team": "Beta FC",
+            "competition": "Test Premier Division",
+            "kickoff_utc": "2026-10-25T14:00:00Z",
+            "home_score": 0,
+            "away_score": 0,
+        }
+        result = agent.collect_records(
+            "offline-test",
+            "https://example.test/fixtures",
+            lambda: [payload],
+        )
+
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["records_collected"], 1)
+        record = result["records"][0]
+        self.assertEqual(record["source"], "offline-test")
+        self.assertEqual(record["source_url"], "https://example.test/fixtures")
+        self.assertEqual(record["raw_payload"]["home_score"], 0)
+        self.assertEqual(record["facts"]["home_score"], 0)
+        self.assertTrue(record["record_id"])
+
+    def test_collection_rejects_non_http_source_url(self):
+        with self.assertRaises(ValueError):
+            DataCollectionAgent().collect_records("offline-test", "file:///tmp/matches.json", lambda: [])
 
 
 class PipelineQualityGateTests(unittest.TestCase):

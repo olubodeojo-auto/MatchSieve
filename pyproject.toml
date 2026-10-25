@@ -5,6 +5,9 @@ description = "Evidence-led football match research service"
 requires-python = ">=3.11"
 dependencies = []
 
-[project.optional-dependencies]\nscraping = ["playwright>=1.48,<2"]\n\n[tool.pytest.ini_options]
+[project.optional-dependencies]
+scraping = ["playwright>=1.48,<2"]
+
+[tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

@@ -1,0 +1,27 @@
+name: MatchSieve offline tests
+
+on:
+  push:
+    branches:
+      - feature/premium-positioning-soccerway-adapter
+  pull_request:
+    branches:
+      - feature/specialist-agents-regional-commerce
+      - main
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate project metadata
+        run: python -c "import tomllib; tomllib.load(open('pyproject.toml', 'rb'))"
+      - name: Compile Python modules
+        run: python -m compileall -q matchsieve scripts tests
+      - name: Run offline tests
+        run: python -m unittest discover -s tests -v

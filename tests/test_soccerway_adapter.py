@@ -167,7 +167,7 @@ class SoccerwayAdapterTests(unittest.TestCase):
             SoccerwayAdapter.validate_match_list_url("https://www.flashscore.mobi/")
 
     def test_page_limit_is_bounded(self):
-        self.assertEqual(SoccerwayAdapter(max_pages=500).max_pages, 9)
+        self.assertEqual(SoccerwayAdapter(max_pages=500).max_pages, 16)
         self.assertEqual(SoccerwayAdapter(max_pages=0).max_pages, 1)
 
     def test_aggregate_keeps_zero_zero_score_and_time_basis_explicit(self):

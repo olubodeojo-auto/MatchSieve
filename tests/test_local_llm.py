@@ -58,6 +58,10 @@ class LocalLLMTests(unittest.TestCase):
         self.assertEqual(len(result["unsupported_claims"]), 1)
         self.assertFalse(result["publication_allowed"])
 
+    def test_remote_or_cloud_endpoint_is_rejected(self):
+        with self.assertRaises(LocalLLMError):
+            LocalLLMClient(base_url="https://ollama.com/api")
+
     def test_no_usable_evidence_does_not_call_model(self):
         with patch("matchsieve.agents.local_llm.urlopen") as mock_urlopen:
             result = LocalLLMClient().analyse(self.research, [])

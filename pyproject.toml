@@ -3,7 +3,7 @@ name = "matchsieve"
 version = "0.3.0"
 description = "Evidence-led football match research service"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["requests>=2.31,<3"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

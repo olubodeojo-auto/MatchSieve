@@ -82,11 +82,11 @@ def main() -> int:
     ):
         parser.error("Input must be an object with fixture and collection objects.")
 
-    llm_client = (
-        LocalOllamaClient(base_url=args.ollama_url, model=args.ollama_model)
-        if args.local_llm else None
-    )
     try:
+        llm_client = (
+            LocalOllamaClient(base_url=args.ollama_url, model=args.ollama_model)
+            if args.local_llm else None
+        )
         result = MatchSieveAgentPipeline(llm_client=llm_client).run(
             source["collection"], source["fixture"], args.market, args.advice_requested
         )

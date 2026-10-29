@@ -14,6 +14,9 @@ class DataQualityAgent:
             facts = record.get("facts") or {}
             missing = [field for field in self.REQUIRED if not facts.get(field)]
             warnings = []
+            payload = record.get("raw_payload") or {}
+            if payload.get("capture_timestamp_is_synthetic") or record.get("capture_timestamp_is_synthetic"):
+                warnings.append("Capture timestamp is synthetic demo metadata; evidence is not eligible for live analysis.")
             if facts.get("home_team") and facts.get("away_team") and str(facts["home_team"]).strip().casefold() == str(facts["away_team"]).strip().casefold():
                 warnings.append("Home and away team names are identical.")
             for key, value in facts.items():

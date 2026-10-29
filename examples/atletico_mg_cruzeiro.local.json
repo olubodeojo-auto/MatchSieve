@@ -31,46 +31,46 @@
               {
                 "date": "2026-10-27",
                 "competition": "SA",
-                "opponent": "Flamengo RJ",
-                "home_score": 3,
-                "away_score": 2,
-                "listing_order": "Flamengo RJ listed first; Atletico-MG second",
+                "listed_team_1": "Flamengo RJ",
+                "listed_score_1": 3,
+                "listed_team_2": "Atletico-MG",
+                "listed_score_2": 2,
                 "result_for_Atletico_MG": "L"
               },
               {
                 "date": "2026-10-21",
                 "competition": "COP",
-                "opponent": "Montevideo City",
-                "home_score": 2,
-                "away_score": 0,
-                "listing_order": "Montevideo City listed first; Atletico-MG second",
+                "listed_team_1": "Montevideo City",
+                "listed_score_1": 2,
+                "listed_team_2": "Atletico-MG",
+                "listed_score_2": 0,
                 "result_for_Atletico_MG": "L"
               },
               {
                 "date": "2026-10-17",
                 "competition": "SA",
-                "opponent": "Coritiba",
-                "home_score": 1,
-                "away_score": 0,
-                "listing_order": "Atletico-MG listed first",
+                "listed_team_1": "Atletico-MG",
+                "listed_score_1": 1,
+                "listed_team_2": "Coritiba",
+                "listed_score_2": 0,
                 "result_for_Atletico_MG": "W"
               },
               {
                 "date": "2026-10-14",
                 "competition": "COP",
-                "opponent": "Montevideo City",
-                "home_score": 3,
-                "away_score": 0,
-                "listing_order": "Atletico-MG listed first",
+                "listed_team_1": "Atletico-MG",
+                "listed_score_1": 3,
+                "listed_team_2": "Montevideo City",
+                "listed_score_2": 0,
                 "result_for_Atletico_MG": "W"
               },
               {
                 "date": "2026-10-11",
                 "competition": "SA",
-                "opponent": "Santos",
-                "home_score": 2,
-                "away_score": 1,
-                "listing_order": "Atletico-MG listed first",
+                "listed_team_1": "Atletico-MG",
+                "listed_score_1": 2,
+                "listed_team_2": "Santos",
+                "listed_score_2": 1,
                 "result_for_Atletico_MG": "W"
               }
             ],
@@ -78,46 +78,46 @@
               {
                 "date": "2026-10-24",
                 "competition": "SA",
-                "opponent": "Remo",
-                "home_score": 1,
-                "away_score": 0,
-                "listing_order": "Cruzeiro listed first",
+                "listed_team_1": "Cruzeiro",
+                "listed_score_1": 1,
+                "listed_team_2": "Remo",
+                "listed_score_2": 0,
                 "result_for_Cruzeiro": "W"
               },
               {
                 "date": "2026-10-18",
                 "competition": "SA",
-                "opponent": "Gremio",
-                "home_score": 2,
-                "away_score": 4,
-                "listing_order": "Gremio listed first; Cruzeiro second",
+                "listed_team_1": "Gremio",
+                "listed_score_1": 2,
+                "listed_team_2": "Cruzeiro",
+                "listed_score_2": 4,
                 "result_for_Cruzeiro": "W"
               },
               {
                 "date": "2026-10-13",
                 "competition": "SA",
-                "opponent": "Bragantino",
-                "home_score": 4,
-                "away_score": 2,
-                "listing_order": "Bragantino listed first; Cruzeiro second",
+                "listed_team_1": "Bragantino",
+                "listed_score_1": 4,
+                "listed_team_2": "Cruzeiro",
+                "listed_score_2": 2,
                 "result_for_Cruzeiro": "L"
               },
               {
                 "date": "2026-10-08",
                 "competition": "SA",
-                "opponent": "Sao Paulo",
-                "home_score": 2,
-                "away_score": 0,
-                "listing_order": "Cruzeiro listed first",
+                "listed_team_1": "Cruzeiro",
+                "listed_score_1": 2,
+                "listed_team_2": "Sao Paulo",
+                "listed_score_2": 0,
                 "result_for_Cruzeiro": "W"
               },
               {
                 "date": "2026-09-20",
                 "competition": "SA",
-                "opponent": "Vitoria",
-                "home_score": 1,
-                "away_score": 3,
-                "listing_order": "Vitoria listed first; Cruzeiro second",
+                "listed_team_1": "Vitoria",
+                "listed_score_1": 1,
+                "listed_team_2": "Cruzeiro",
+                "listed_score_2": 3,
                 "result_for_Cruzeiro": "W"
               }
             ]
@@ -126,42 +126,42 @@
             {
               "date": "2026-09-02",
               "competition": "COP",
-              "home_team": "Atletico-MG",
-              "home_score": 2,
-              "away_team": "Cruzeiro",
-              "away_score": 1
+              "listed_team_1": "Atletico-MG",
+              "listed_score_1": 2,
+              "listed_team_2": "Cruzeiro",
+              "listed_score_2": 1
             },
             {
               "date": "2026-08-26",
               "competition": "COP",
-              "home_team": "Cruzeiro",
-              "home_score": 1,
-              "away_team": "Atletico-MG",
-              "away_score": 1
+              "listed_team_1": "Cruzeiro",
+              "listed_score_1": 1,
+              "listed_team_2": "Atletico-MG",
+              "listed_score_2": 1
             },
             {
               "date": "2026-05-03",
               "competition": "SA",
-              "home_team": "Cruzeiro",
-              "home_score": 1,
-              "away_team": "Atletico-MG",
-              "away_score": 3
+              "listed_team_1": "Cruzeiro",
+              "listed_score_1": 1,
+              "listed_team_2": "Atletico-MG",
+              "listed_score_2": 3
             },
             {
               "date": "2026-03-08",
               "competition": "MIN",
-              "home_team": "Cruzeiro",
-              "home_score": 1,
-              "away_team": "Atletico-MG",
-              "away_score": 0
+              "listed_team_1": "Cruzeiro",
+              "listed_score_1": 1,
+              "listed_team_2": "Atletico-MG",
+              "listed_score_2": 0
             },
             {
               "date": "2026-01-25",
               "competition": "MIN",
-              "home_team": "Atletico-MG",
-              "home_score": 2,
-              "away_team": "Cruzeiro",
-              "away_score": 1
+              "listed_team_1": "Atletico-MG",
+              "listed_score_1": 2,
+              "listed_team_2": "Cruzeiro",
+              "listed_score_2": 1
             }
           ],
           "standings": {
@@ -221,7 +221,8 @@
             "The form lists mix competition types; Atletico-MG's latest five include Copa matches.",
             "The standings view reports both teams on 32 matches played, while the wider table includes other teams with 31, 32 or 33 matches played.",
             "No lineup, injury, suspension, xG, home-only record or away-only record was included in the pasted excerpt.",
-            "The fixture and statistics are user-supplied and have not been independently validated."
+            "The fixture and statistics are user-supplied and have not been independently validated.",
+            "Recent-results score fields are stored in the order displayed by the source, not assumed to be home/away scores."
           ]
         }
       }

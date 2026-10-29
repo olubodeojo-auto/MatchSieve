@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from matchsieve.agents import MatchSieveAgentPipeline
@@ -30,7 +31,7 @@ def main() -> int:
         help="Use an installed local Ollama model for evidence interpretation.",
     )
     parser.add_argument("--ollama-url", default="http://127.0.0.1:11434")
-    parser.add_argument("--ollama-model", default="qwen2.5:7b")
+    parser.add_argument("--ollama-model", default=os.environ.get("MATCHSIEVE_OLLAMA_MODEL", "qwen2.5:7b"))
     args = parser.parse_args()
 
     source = json.loads(Path(args.input_json).read_text(encoding="utf-8"))

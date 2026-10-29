@@ -38,7 +38,7 @@ class LocalLLMTests(unittest.TestCase):
     @patch("matchsieve.agents.local_llm.urlopen")
     def test_sends_request_to_local_ollama_and_validates_citations(self, mock_urlopen):
         mock_urlopen.return_value = FakeResponse({"message": {"content": json.dumps(self.analysis)}})
-        result = LocalLLMClient().analyse(self.research, self.evidence)
+        result = LocalLLMClient(model="qwen2.5:7b").analyse(self.research, self.evidence)
         self.assertEqual(result["status"], "llm_analysis_complete")
         self.assertEqual(result["unsupported_claims"], [])
         self.assertFalse(result["publication_allowed"])

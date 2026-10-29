@@ -25,7 +25,7 @@
           "source_ref": "user_supplied_page_excerpt"
         },
         "raw_payload": {
-          "data_scope": "Only facts transcribed from the user-provided page excerpt. The excerpt has not been independently verified.",
+          "data_scope": "Only facts transcribed from the user-provided page excerpt. Not independently verified. The captured_at timestamp is synthetic demo metadata and must not be treated as the actual source retrieval time.",
           "form_summary": {
             "Atletico_MG_last_five": [
               {
@@ -223,7 +223,8 @@
             "No lineup, injury, suspension, xG, home-only record or away-only record was included in the pasted excerpt.",
             "The fixture and statistics are user-supplied and have not been independently validated.",
             "Recent-results score fields are stored in the order displayed by the source, not assumed to be home/away scores."
-          ]
+          ],
+          "capture_timestamp_is_synthetic": true
         }
       }
     ]

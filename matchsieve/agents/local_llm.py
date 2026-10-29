@@ -103,6 +103,21 @@ class LocalOllamaClient:
         if not isinstance(analysis, dict):
             raise LocalLLMError("Ollama response must be a JSON object.")
 
+        required_fields = {
+            "summary": str,
+            "supporting_points": list,
+            "counter_points": list,
+            "data_quality_concerns": list,
+            "market_assessment": str,
+            "limitations": list,
+            "decision": str,
+        }
+        for field, expected_type in required_fields.items():
+            if field not in analysis or not isinstance(analysis[field], expected_type):
+                raise LocalLLMError(
+                    f"Ollama response has a missing or invalid {field!r} field; refusing the analysis."
+                )
+
         unsupported_claims: list[dict[str, Any]] = []
         for section in ("supporting_points", "counter_points"):
             points = analysis.get(section, [])

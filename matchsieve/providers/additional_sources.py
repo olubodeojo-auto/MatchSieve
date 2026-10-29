@@ -6,6 +6,7 @@ from typing import Any
 
 from .base import ProviderError
 from .http_json import get_json
+from ..normalise import normalise_name
 
 
 def _rows(payload: Any, source: str) -> list[dict[str, Any]]:
@@ -95,6 +96,13 @@ def _normalise(row: dict[str, Any], source: str) -> dict[str, Any] | None:
     return result
 
 
+def _filter_competition(rows: list[dict[str, Any]], competition: str | None) -> list[dict[str, Any]]:
+    if not competition:
+        return rows
+    expected = normalise_name(competition)
+    return [row for row in rows if normalise_name(row["competition"]) == expected]
+
+
 class FootballDataIOProvider:
     key = "footballdata_io"
     base_url = "https://footballdata.io/api/v1"
@@ -138,7 +146,7 @@ class FootballDataIOProvider:
             usable = [row for row in mapped if row is not None]
             if rows and not usable:
                 raise ProviderError("FootballData.io returned records, but their fixture fields did not match the current mapper; no records archived.")
-            return usable
+            return _filter_competition(usable, kwargs.get("competition"))
 
         payload = get_json(f"{self.base_url}/{endpoint}", params=params, headers=headers)
         rows = _rows(payload, "FootballData.io")
@@ -146,7 +154,7 @@ class FootballDataIOProvider:
         usable = [row for row in mapped if row is not None]
         if rows and not usable:
             raise ProviderError("FootballData.io returned records, but their fixture fields did not match the current mapper; no records archived.")
-        return usable
+        return _filter_competition(usable, kwargs.get("competition"))
 
 
 class LiveFootballProvider:
@@ -181,7 +189,7 @@ class LiveFootballProvider:
         usable = [row for row in mapped if row is not None]
         if rows and not usable:
             raise ProviderError("LiveFootball returned records, but their fixture fields did not match the current mapper; no records archived.")
-        return usable
+        return _filter_competition(usable, kwargs.get("competition"))
 
 
 class SportMonksProvider:
@@ -220,4 +228,4 @@ class SportMonksProvider:
                 mapped.append(mapped_row)
         if rows and not mapped:
             raise ProviderError("SportMonks returned records, but their fixture fields did not match the current mapper; no records archived.")
-        return mapped
+        return _filter_competition(mapped, kwargs.get("competition"))

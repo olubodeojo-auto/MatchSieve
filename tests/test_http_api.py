@@ -6,9 +6,10 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from http.server import ThreadingHTTPServer
-from unittest.mock import patch
+from unittest.mock import DEFAULT, patch
 
 from matchsieve.db import initialize
+from matchsieve.provider_manager import ProviderManager
 from matchsieve.repository import Repository
 from matchsieve.webserver import Handler
 
@@ -107,12 +108,67 @@ class MatchSieveHttpApiTests(unittest.TestCase):
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with self.assertRaises(urllib.error.HTTPError) as caught:
-            urllib.request.urlopen(request, timeout=3)
+        with patch("matchsieve.provider_manager.ENABLED_PROVIDERS", []), patch(
+            "matchsieve.provider_manager.SportScoreProvider"
+        ) as adapter_class:
+            with self.assertRaises(urllib.error.HTTPError) as caught:
+                urllib.request.urlopen(request, timeout=3)
         self.assertEqual(409, caught.exception.code)
         payload = json.loads(caught.exception.read().decode("utf-8"))
+        self.assertEqual("sportscore", payload["provider"])
         self.assertEqual("failed", payload["status"])
+        self.assertEqual(0, payload["records_received"])
         self.assertIn("not enabled", payload["message"])
+        adapter_class.assert_not_called()
+        adapter_class.return_value.fetch_fixtures.assert_not_called()
+
+    def test_unknown_provider_is_rejected_without_network_fanout(self):
+        request = urllib.request.Request(
+            self.base + "/api/provider-fetch",
+            data=json.dumps({"provider": "unknown_provider"}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with patch("matchsieve.provider_manager.ApiFootballProvider") as adapter_class:
+            with self.assertRaises(urllib.error.HTTPError) as caught:
+                urllib.request.urlopen(request, timeout=3)
+        self.assertEqual(409, caught.exception.code)
+        payload = json.loads(caught.exception.read().decode("utf-8"))
+        self.assertEqual("unknown_provider", payload["provider"])
+        self.assertEqual("failed", payload["status"])
+        self.assertEqual(0, payload["records_received"])
+        self.assertIn("no adapter is registered", payload["message"].lower())
+        adapter_class.assert_not_called()
+
+    def test_fetch_instantiates_only_requested_provider_adapter(self):
+        adapter_names = (
+            "ApiFootballProvider",
+            "SportMonksProvider",
+            "FootballDataIOProvider",
+            "LiveFootballProvider",
+            "TheSportsDBProvider",
+            "SportScoreProvider",
+            "OpenLigaDBProvider",
+            "FootballDataOrgProvider",
+        )
+        with patch(
+            "matchsieve.provider_manager.ENABLED_PROVIDERS", ["sportscore"]
+        ), patch.multiple(
+            "matchsieve.provider_manager",
+            **{name: DEFAULT for name in adapter_names},
+        ) as adapter_classes, patch(
+            "matchsieve.provider_manager.refresh_indexes", return_value={}
+        ):
+            result = ProviderManager(Handler.repo).fetch("sportscore", date="2026-10-25")
+
+        self.assertEqual("empty", result["status"])
+        adapter_classes["SportScoreProvider"].assert_called_once_with()
+        adapter_classes["SportScoreProvider"].return_value.fetch_fixtures.assert_called_once_with(
+            date="2026-10-25"
+        )
+        for name in adapter_names:
+            if name != "SportScoreProvider":
+                adapter_classes[name].assert_not_called()
 
     def test_malformed_json_is_a_400_not_a_server_crash(self):
         request = urllib.request.Request(

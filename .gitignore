@@ -24,6 +24,7 @@ config/*_key.txt
 logs/
 data/archive/*
 !data/archive/.gitkeep
+data/cache/
 
 # Supabase local state
 supabase/.temp/

@@ -55,8 +55,12 @@ class MatchSieveAgentPipeline:
                 if record.get("record_id") in usable_ids
             ]
             result["llm_analysis"] = self.llm_client.analyse(research, usable_evidence)
-            # The LLM never upgrades a deterministic failure or publishes a report itself.
-            if result["llm_analysis"].get("status") != "llm_analysis_complete":
-                result["pipeline_status"] = "review_required"
+            # The LLM may downgrade the result but can never upgrade the deterministic gate.
+            llm_result = result["llm_analysis"]
+            if llm_result.get("status") != "llm_analysis_complete":
+                if result["pipeline_status"] != "insufficient_evidence":
+                    result["pipeline_status"] = "review_required"
+            elif (llm_result.get("analysis") or {}).get("decision") == "INSUFFICIENT_EVIDENCE":
+                result["pipeline_status"] = "insufficient_evidence"
 
         return result

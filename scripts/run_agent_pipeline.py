@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 
 from matchsieve.agents import MatchSieveAgentPipeline
-from matchsieve.agents.local_llm import LocalOllamaClient
+from matchsieve.agents.local_llm import LocalLLMError, LocalOllamaClient
 
 
 def main() -> int:
@@ -45,9 +45,12 @@ def main() -> int:
         LocalOllamaClient(base_url=args.ollama_url, model=args.ollama_model)
         if args.local_llm else None
     )
-    result = MatchSieveAgentPipeline(llm_client=llm_client).run(
-        source["collection"], source["fixture"], args.market, args.advice_requested
-    )
+    try:
+        result = MatchSieveAgentPipeline(llm_client=llm_client).run(
+            source["collection"], source["fixture"], args.market, args.advice_requested
+        )
+    except LocalLLMError as exc:
+        parser.error(str(exc))
     target = Path(args.output)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(result, ensure_ascii=False, indent=2, default=str), encoding="utf-8")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -40,11 +41,11 @@ class LocalOllamaClient:
     def __init__(
         self,
         base_url: str = "http://127.0.0.1:11434",
-        model: str = "qwen2.5:7b",
+        model: str | None = None,
         timeout_seconds: int = 120,
     ) -> None:
         self.base_url = base_url.rstrip("/")
-        self.model = model
+        self.model = model or os.environ.get("MATCHSIEVE_OLLAMA_MODEL", "qwen2.5:7b")
         self.timeout_seconds = timeout_seconds
 
     def analyse(self, research: dict[str, Any], usable_evidence: list[dict[str, Any]]) -> dict[str, Any]:

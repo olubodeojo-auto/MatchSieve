@@ -4,6 +4,7 @@ import json
 import os
 from typing import Any
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 
@@ -44,6 +45,12 @@ class LocalOllamaClient:
         model: str | None = None,
         timeout_seconds: int = 120,
     ) -> None:
+        parsed = urlparse(base_url)
+        if parsed.scheme != "http" or parsed.hostname not in {"localhost", "127.0.0.1", "::1"}:
+            raise LocalLLMError(
+                "MatchSieve local mode only allows a loopback Ollama URL (localhost/127.0.0.1). "
+                "Cloud or remote endpoints are not allowed in this adapter."
+            )
         self.base_url = base_url.rstrip("/")
         self.model = model or os.environ.get("MATCHSIEVE_OLLAMA_MODEL", "qwen2.5:7b")
         self.timeout_seconds = timeout_seconds

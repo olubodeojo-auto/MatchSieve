@@ -1,78 +1,83 @@
 # Local LLM analysis for MatchSieve
 
 MatchSieve can optionally use a local language model through [Ollama](https://ollama.com/).
-This mode uses the model running on your own computer. It does not require a hosted LLM
-API key or a VPS. The existing deterministic pipeline continues to work without Ollama.
+The model runs on your own Windows PC. This requires no hosted AI API key and no VPS.
+The deterministic MatchSieve pipeline still runs without Ollama.
 
-## 1. Install and prepare Ollama on Windows
+## 1. One-command Windows setup
 
-1. Install Ollama from https://ollama.com/download/windows.
-2. Open PowerShell and download a model:
-   ```powershell
-   ollama pull qwen2.5:7b
-   ```
-3. Confirm the model is available:
-   ```powershell
-   ollama list
-   ```
-4. Confirm Ollama responds locally:
-   ```powershell
-   Invoke-RestMethod http://127.0.0.1:11434/api/tags
-   ```
-
-The model download needs internet once. Analysis can then run locally, provided Ollama
-is running and the model is installed. Local inference still uses your computer's RAM,
-CPU and, if available, GPU. A 7B model is a better starting point on a machine with
-adequate memory; on a lower-memory machine, try `qwen2.5:3b` instead. Actual speed
-depends on the hardware and context size.
-
-## 2. Run MatchSieve with local LLM analysis
-
-Prepare the usual MatchSieve JSON input containing a `fixture` and `collection.records`,
-then run:
+From the MatchSieve repository root, open PowerShell and run:
 
 ```powershell
-python scripts/run_agent_pipeline.py data/your-match.json --market RESULT_1X2 --local-llm
+Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\setup_local_llm.ps1
 ```
 
-Choose another supported market as needed:
-- `DOUBLE_CHANCE`
-- `DRAW_NO_BET`
-- `OVER_UNDER_MATCH_GOALS`
-- `OVER_UNDER_TEAM_GOALS`
+The script uses the official [Ollama Windows installer](https://ollama.com/download/windows),
+checks physical RAM, chooses a Qwen2.5 model size, downloads the model, starts the local
+service if needed, tests the local API, and stores the model name in the user environment
+variable `MATCHSIEVE_OLLAMA_MODEL`.
 
-Use a different model or local Ollama URL if required:
+- 16 GB RAM or more: `qwen2.5:7b` (about 4.7 GB download).
+- 8–15 GB RAM: `qwen2.5:3b` (about 1.9 GB download).
+- Under 8 GB RAM: `qwen2.5:1.5b` (basic smoke-test only; too small to trust for serious analysis).
 
-```powershell
-python scripts/run_agent_pipeline.py data/your-match.json --market RESULT_1X2 --local-llm --ollama-model qwen2.5:3b
-```
+These are approximate model download sizes. You also need extra disk space and memory for
+Windows, the context window, and other running applications. Speed depends on CPU/GPU and
+available RAM. If you have a low-memory machine, close heavy applications before testing.
 
-The script writes the standard deterministic report and a separate `.llm.json` analysis
-file. The LLM is not permitted to publish a report or override the deterministic quality
-gate. Its evidence claims must cite record IDs from the quality-approved evidence set.
-Claims with missing or unknown record IDs are flagged for review.
+**Security note:** the setup script executes Ollama's official installation script from
+`https://ollama.com/install.ps1`. It then uses only the local loopback API at
+`http://127.0.0.1:11434`. MatchSieve's local adapter rejects non-loopback/cloud URLs.
+The first installation and model download require internet; subsequent local inference
+does not need a hosted AI service.
 
-## 3. What the local LLM does and does not do
-
-The LLM interprets the evidence assembled by MatchSieve. It does not collect fixtures,
-open Soccerway pages, fetch missing H2H results, verify source licensing, or calculate
-authoritative match statistics by itself. Those jobs belong to the collector, structured
-database, and deterministic analytics. A future integration can feed it richer, normalized
-form/H2H/standings/odds data once the source adapter reliably extracts those fields.
-
-The model may still misunderstand evidence or produce plausible but wrong analysis.
-Citation checks are a safety filter, not proof that a claim is true. Keep human review,
-source traceability, and regression tests. Do not use the output as a guarantee of betting
-success.
-
-## 4. Tests
-
-Run the local adapter tests and the existing project suite:
+## 2. Run the MatchSieve test suite
 
 ```powershell
 python -m unittest tests.test_local_llm -v
+python -m unittest tests.test_local_llm_pipeline -v
 python -m unittest discover -s tests -v
 ```
 
-The local LLM tests mock the HTTP response, so they do not require Ollama or a downloaded
-model. A separate manual smoke test with Ollama verifies that the installed model responds.
+The local adapter tests mock the HTTP response, so they do not require a downloaded model.
+The complete project suite should be green before merging the pull request. GitHub Actions
+also runs compile checks and unit tests for pushes and pull requests.
+
+## 3. Run the supplied Atletico-MG vs Cruzeiro example
+
+The example under `examples/atletico_mg_cruzeiro.local.json` was transcribed from a user-pasted
+page excerpt. It is not a fresh Soccerway collection, is not independently verified, and
+its capture timestamp is synthetic for demonstration. Do not treat the example as current
+match advice.
+
+After installing the model, run:
+
+```powershell
+python scripts/run_agent_pipeline.py examples/atletico_mg_cruzeiro.local.json --market RESULT_1X2 --local-llm --output data/atletico-cruzeiro-report.json
+```
+
+MatchSieve will write:
+- `data/atletico-cruzeiro-report.json` — full pipeline output and model analysis.
+- `data/atletico-cruzeiro-report.md` — deterministic evidence report.
+- `data/atletico-cruzeiro-report.llm.json` — structured local LLM response and validation result.
+- `data/atletico-cruzeiro-report.llm.md` — readable local LLM interpretation.
+
+When using an archived sample, the deterministic quality gate may correctly reject the
+record as stale. For live research, use freshly collected records with the true capture
+timestamp and source URL.
+
+## 4. What the local LLM does and does not do
+
+The local model interprets structured evidence assembled by MatchSieve. It does not
+independently collect fixtures, open Soccerway pages, fetch missing H2H results, verify
+source licensing, or calculate authoritative statistics. Those jobs belong to the
+collector, structured database, and deterministic analytics.
+
+Supporting and counter-evidence points must cite record IDs from the quality-approved
+evidence set. Missing or unknown IDs are flagged for review. This checks traceability,
+not whether the cited data truly supports the claim. The LLM can still misunderstand or
+misstate football evidence; its report is not automatically published and human review
+remains mandatory.
+
+This is a research tool, not a guarantee of betting success.

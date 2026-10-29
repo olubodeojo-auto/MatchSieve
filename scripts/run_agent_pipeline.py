@@ -29,7 +29,7 @@ def render_local_llm_markdown(result: dict) -> str:
     ]
     if not isinstance(analysis, dict):
         lines.extend(["", "## Result", "", str(result.get("error", "No analysis was returned."))])
-        return "\\n".join(lines) + "\\n"
+        return "\n".join(lines) + "\n"
 
     flagged = {item.get("claim") for item in result.get("unsupported_claims", [])}
     lines.extend(["", "## Summary", "", str(analysis.get("summary", "No summary returned."))])
@@ -52,7 +52,7 @@ def render_local_llm_markdown(result: dict) -> str:
     lines.extend(["", "## Limitations", ""])
     lines.extend([f"- {item}" for item in (analysis.get("limitations") or [])] or ["- No limitations supplied by the model."])
     lines.extend(["", "## Final gate", "", f"**Model decision:** {analysis.get('decision', 'INSUFFICIENT_EVIDENCE')}", "**Publication allowed:** No"])
-    return "\\n".join(lines) + "\\n"
+    return "\n".join(lines) + "\n"
 
 
 def main() -> int:

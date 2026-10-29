@@ -15,6 +15,46 @@ from matchsieve.agents import MatchSieveAgentPipeline
 from matchsieve.agents.local_llm import LocalLLMError, LocalOllamaClient
 
 
+def render_local_llm_markdown(result: dict) -> str:
+    """Render the separate LLM analysis with its evidence IDs and review warnings."""
+    analysis = result.get("analysis")
+    lines = [
+        "# MatchSieve Local LLM Analysis",
+        "",
+        f"**Validation status:** {result.get('status', 'unknown')}",
+        f"**Model:** {result.get('model', 'not recorded')}",
+        "**Publication:** Disabled — human review required.",
+        "",
+        "> Evidence-ID checks establish traceability, not that a claim is correct. Check each cited source.",
+    ]
+    if not isinstance(analysis, dict):
+        lines.extend(["", "## Result", "", str(result.get("error", "No analysis was returned."))])
+        return "\\n".join(lines) + "\\n"
+
+    flagged = {item.get("claim") for item in result.get("unsupported_claims", [])}
+    lines.extend(["", "## Summary", "", str(analysis.get("summary", "No summary returned."))])
+    for section, title in (
+        ("supporting_points", "Supporting points"),
+        ("counter_points", "Counter-evidence"),
+    ):
+        lines.extend(["", f"## {title}", ""])
+        points = analysis.get(section) or []
+        if not points:
+            lines.append("- No point was supplied.")
+        for point in points:
+            claim = str(point.get("claim", "Invalid point"))
+            ids = point.get("evidence_record_ids") or []
+            marker = "REVIEW REQUIRED — citation missing/invalid" if claim in flagged else "Traceable ID(s)"
+            lines.append(f"- **{marker}:** {claim} _(records: {', '.join(map(str, ids)) or 'none'})_")
+    lines.extend(["", "## Data quality concerns", ""])
+    lines.extend([f"- {item}" for item in (analysis.get("data_quality_concerns") or [])] or ["- None reported by the model."])
+    lines.extend(["", "## Market assessment", "", str(analysis.get("market_assessment", "No market assessment returned."))])
+    lines.extend(["", "## Limitations", ""])
+    lines.extend([f"- {item}" for item in (analysis.get("limitations") or [])] or ["- No limitations supplied by the model."])
+    lines.extend(["", "## Final gate", "", f"**Model decision:** {analysis.get('decision', 'INSUFFICIENT_EVIDENCE')}", "**Publication allowed:** No"])
+    return "\\n".join(lines) + "\\n"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run MatchSieve specialist agents on collected football evidence."
@@ -59,9 +99,12 @@ def main() -> int:
     markdown_path.write_text(result["report"]["markdown"], encoding="utf-8")
 
     llm = result.get("llm_analysis")
+    llm_markdown_path = None
     if llm is not None:
         llm_path = target.with_name(target.stem + ".llm.json")
         llm_path.write_text(json.dumps(llm, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+        llm_markdown_path = target.with_name(target.stem + ".llm.md")
+        llm_markdown_path.write_text(render_local_llm_markdown(llm), encoding="utf-8")
 
     print(json.dumps({
         "pipeline_status": result["pipeline_status"],
@@ -72,6 +115,7 @@ def main() -> int:
         "recommendation_status": result["report"].get("recommendation_status"),
         "local_llm_enabled": args.local_llm,
         "local_llm_status": llm.get("status") if llm else "disabled",
+        "local_llm_markdown": str(llm_markdown_path) if llm_markdown_path else None,
         "publication_allowed": False,
     }, indent=2))
     return 0

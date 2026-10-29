@@ -4,7 +4,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from matchsieve.agents.local_llm import LocalLLMClient, LocalLLMError
+from matchsieve.agents.local_llm import LocalOllamaClient, LocalLLMError
 
 
 class FakeResponse:
@@ -38,7 +38,7 @@ class LocalLLMTests(unittest.TestCase):
     @patch("matchsieve.agents.local_llm.urlopen")
     def test_sends_request_to_local_ollama_and_validates_citations(self, mock_urlopen):
         mock_urlopen.return_value = FakeResponse({"message": {"content": json.dumps(self.analysis)}})
-        result = LocalLLMClient(model="qwen2.5:7b").analyse(self.research, self.evidence)
+        result = LocalOllamaClient(model="qwen2.5:7b").analyse(self.research, self.evidence)
         self.assertEqual(result["status"], "llm_analysis_complete")
         self.assertEqual(result["unsupported_claims"], [])
         self.assertFalse(result["publication_allowed"])
@@ -53,18 +53,18 @@ class LocalLLMTests(unittest.TestCase):
         bad = dict(self.analysis)
         bad["supporting_points"] = [{"claim": "Unsupported statement.", "evidence_record_ids": ["made-up"]}]
         mock_urlopen.return_value = FakeResponse({"message": {"content": json.dumps(bad)}})
-        result = LocalLLMClient().analyse(self.research, self.evidence)
+        result = LocalOllamaClient().analyse(self.research, self.evidence)
         self.assertEqual(result["status"], "review_required")
         self.assertEqual(len(result["unsupported_claims"]), 1)
         self.assertFalse(result["publication_allowed"])
 
     def test_remote_or_cloud_endpoint_is_rejected(self):
         with self.assertRaises(LocalLLMError):
-            LocalLLMClient(base_url="https://ollama.com/api")
+            LocalOllamaClient(base_url="https://ollama.com/api")
 
     def test_no_usable_evidence_does_not_call_model(self):
         with patch("matchsieve.agents.local_llm.urlopen") as mock_urlopen:
-            result = LocalLLMClient().analyse(self.research, [])
+            result = LocalOllamaClient().analyse(self.research, [])
         mock_urlopen.assert_not_called()
         self.assertEqual(result["status"], "insufficient_evidence")
 
@@ -72,7 +72,7 @@ class LocalLLMTests(unittest.TestCase):
     def test_malformed_model_response_is_rejected(self, mock_urlopen):
         mock_urlopen.return_value = FakeResponse({"message": {"content": "not json"}})
         with self.assertRaises(LocalLLMError):
-            LocalLLMClient().analyse(self.research, self.evidence)
+            LocalOllamaClient().analyse(self.research, self.evidence)
 
 
 if __name__ == "__main__":

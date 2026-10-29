@@ -3,6 +3,7 @@ from unittest.mock import patch
 from matchsieve.providers.sportscore import SportScoreProvider
 from matchsieve.providers.openligadb import OpenLigaDBProvider
 from matchsieve.providers.football_data_org import FootballDataOrgProvider
+from matchsieve.providers.additional_sources import FootballDataIOProvider
 from matchsieve.providers.catalog import list_providers
 
 class ProviderAdapterTests(unittest.TestCase):
@@ -19,6 +20,25 @@ class ProviderAdapterTests(unittest.TestCase):
         mock.return_value=[{'matchID':1,'leagueName':'Test','matchDateTimeUTC':'2026-10-01T18:00:00Z','team1':{'teamName':'A'},'team2':{'teamName':'B'},'matchResults':[{'resultName':'Endergebnis','pointsTeam1':3,'pointsTeam2':0}]}]
         rows=OpenLigaDBProvider().fetch_fixtures('bl1','2026')
         self.assertEqual(rows[0]['home_score'],3); self.assertEqual(rows[0]['away_score'],0)
+
+    @patch('matchsieve.providers.openligadb.get_json')
+    def test_openligadb_applies_requested_date_range(self,mock):
+        mock.return_value=[
+            {'matchID':1,'leagueName':'Test','matchDateTimeUTC':'2026-10-01T18:00:00Z','team1':{'teamName':'A'},'team2':{'teamName':'B'}},
+            {'matchID':2,'leagueName':'Test','matchDateTimeUTC':'2026-10-02T18:00:00Z','team1':{'teamName':'C'},'team2':{'teamName':'D'}},
+        ]
+        rows=OpenLigaDBProvider().fetch_fixtures('bl1','2026','2026-10-02','2026-10-02')
+        self.assertEqual([row['external_id'] for row in rows],[2])
+
+    @patch('matchsieve.providers.additional_sources.get_json')
+    @patch.dict('os.environ', {'FOOTBALLDATA_IO_API_KEY': 'unit-test-token'})
+    def test_footballdata_io_applies_competition_filter(self,mock):
+        mock.return_value={'data':[
+            {'id':1,'date':'2026-10-25T18:00:00Z','home_team':'A','away_team':'B','competition':'League One'},
+            {'id':2,'date':'2026-10-25T18:00:00Z','home_team':'C','away_team':'D','competition':'League Two'},
+        ]}
+        rows=FootballDataIOProvider().fetch_fixtures('2026-10-25','2026-10-25',competition='League One')
+        self.assertEqual([row['external_id'] for row in rows],[1])
 
     @patch('matchsieve.providers.football_data_org.get_json')
     @patch.dict('os.environ', {'FOOTBALL_DATA_ORG_TOKEN': 'unit-test-token'})

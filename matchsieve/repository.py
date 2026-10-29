@@ -1,20 +1,58 @@
 from __future__ import annotations
 import hashlib, json
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-from .config import DB_PATH
+from .config import DB_PATH, ROOT
 from .db import connect, initialize
 from .normalise import normalise_name, parse_datetime, utc_now
 
 CORE_FIELDS = {"external_id", "competition", "season", "kickoff", "kickoff_utc", "home_team", "away_team", "status", "venue", "home_score", "away_score", "halftime_home_score", "halftime_away_score", "source_key", "source_ref", "source_url", "is_synthetic", "provider_payload", "quality_label", "result_type"}
+FIXTURE_ALIASES = json.loads((ROOT / "knowledge" / "aliases.json").read_text(encoding="utf-8"))
+
+
+def _source_matches(rule: dict[str, Any], source_key: str) -> bool:
+    sources = rule.get("sources", [])
+    return not sources or normalise_name(source_key) in {normalise_name(source) for source in sources}
+
+
+def _fixture_identity(item: dict[str, Any]) -> tuple[str, str, str, str]:
+    kickoff = parse_datetime(item.get("kickoff_utc") or item.get("kickoff"))
+    competition = normalise_name(item.get("competition", "unknown"))
+    source_key = str(item.get("source_key") or "")
+
+    for rule in FIXTURE_ALIASES.get("competition_aliases", []):
+        if _source_matches(rule, source_key) and competition in {
+            normalise_name(alias) for alias in rule["aliases"]
+        }:
+            competition = normalise_name(rule["canonical"])
+            break
+
+    team_names = []
+    for field in ("home_team", "away_team"):
+        team = normalise_name(item[field])
+        for rule in FIXTURE_ALIASES.get("team_aliases", []):
+            if (
+                normalise_name(rule["competition"]) == competition
+                and _source_matches(rule, source_key)
+                and team in {normalise_name(alias) for alias in rule["aliases"]}
+            ):
+                team = normalise_name(rule["canonical"])
+                break
+        team_names.append(team)
+
+    return competition, kickoff[:10], team_names[0], team_names[1]
+
+
+def _fixture_season(item: dict[str, Any]) -> str | None:
+    value = item.get("season")
+    return normalise_name(value) if value not in (None, "") else None
 
 
 def canonical_key(item: dict[str, Any]) -> str:
-    kickoff = parse_datetime(item.get("kickoff_utc") or item.get("kickoff"))
-    # Same-day, same competition/team order maps to one canonical fixture.
-    day = kickoff[:10]
-    parts = [normalise_name(item.get("competition", "unknown")), day, normalise_name(item["home_team"]), normalise_name(item["away_team"])]
+    competition, day, home, away = _fixture_identity(item)
+    season = _fixture_season(item) or "unknown"
+    parts = [competition, day, f"season:{season}", home, away]
     return "|".join(parts)
 
 
@@ -37,14 +75,73 @@ class Repository:
         source_ref = source_ref or item.get("source_ref")
         source_url = source_url or item.get("source_url")
         now = utc_now()
-        key = canonical_key({**item, "competition": competition, "kickoff_utc": kickoff, "home_team": home, "away_team": away})
+        identity_item = {
+            **item,
+            "competition": competition,
+            "kickoff_utc": kickoff,
+            "home_team": home,
+            "away_team": away,
+            "source_key": source_key,
+        }
+        key = canonical_key(identity_item)
+        identity = _fixture_identity(identity_item)
+        season = _fixture_season(item)
         payload = raw_payload if raw_payload is not None else item
         payload_text = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
         digest = hashlib.sha256(payload_text.encode("utf-8")).hexdigest()
         status = str(item.get("status") or ("finished" if item.get("home_score") is not None and item.get("away_score") is not None else "scheduled")).lower()
         conn = connect(self.db_path)
         try:
-            existing = conn.execute("SELECT id FROM fixtures WHERE canonical_key=?", (key,)).fetchone()
+            day_start = f"{identity[1]}T00:00:00Z"
+            day_after = (date.fromisoformat(identity[1]) + timedelta(days=1)).isoformat()
+            candidates = conn.execute(
+                """SELECT id,canonical_key,competition,season,kickoff_utc,home_team,away_team,source_primary
+                FROM fixtures WHERE kickoff_utc>=? AND kickoff_utc<?""",
+                (day_start, f"{day_after}T00:00:00Z"),
+            ).fetchall()
+            matches = [
+                row for row in candidates
+                if _fixture_identity({**dict(row), "source_key": source_key}) == identity
+                and (
+                    season is None
+                    or row["season"] in (None, "")
+                    or _fixture_season({"season": row["season"]}) == season
+                )
+            ]
+            same_season = [
+                row for row in matches
+                if season is not None and _fixture_season({"season": row["season"]}) == season
+            ]
+            unknown_season = [row for row in matches if row["season"] in (None, "")]
+            existing = None
+            ambiguous = False
+            # A missing season is safe only when the date/team identity has one candidate.
+            if season is None:
+                if len(matches) == 1:
+                    existing = matches[0]
+                elif len(matches) > 1:
+                    ambiguous = True
+            elif same_season:
+                if len(same_season) == 1:
+                    existing = same_season[0]
+                else:
+                    ambiguous = True
+            elif unknown_season:
+                if len(unknown_season) == 1:
+                    existing = unknown_season[0]
+                else:
+                    ambiguous = True
+
+            if existing is None and ambiguous:
+                key = (
+                    f"{key}|source:{normalise_name(source_key)}"
+                    f"|ref:{normalise_name(source_ref or '')}"
+                    f"|teams:{normalise_name(home)}|{normalise_name(away)}"
+                )
+                existing = conn.execute(
+                    "SELECT id,season FROM fixtures WHERE canonical_key=?", (key,)
+                ).fetchone()
+
             if existing:
                 fixture_id = int(existing["id"])
                 conn.execute("""UPDATE fixtures SET external_id=COALESCE(?,external_id), season=COALESCE(?,season),
@@ -79,14 +176,43 @@ class Repository:
                      "source-reported" if source_url else "unverified",
                      fixture_id, field, value_json, source_key, source_ref))
             if item.get("home_score") is not None and item.get("away_score") is not None:
-                conn.execute("""INSERT INTO match_results(fixture_id,home_score,away_score,halftime_home_score,halftime_away_score,
-                    result_type,captured_at,source_key) VALUES(?,?,?,?,?,?,?,?)
-                    ON CONFLICT(fixture_id) DO UPDATE SET home_score=excluded.home_score,away_score=excluded.away_score,
-                    halftime_home_score=COALESCE(excluded.halftime_home_score,match_results.halftime_home_score),
-                    halftime_away_score=COALESCE(excluded.halftime_away_score,match_results.halftime_away_score),
-                    captured_at=excluded.captured_at,source_key=excluded.source_key""",
-                    (fixture_id, int(item["home_score"]), int(item["away_score"]), item.get("halftime_home_score"),
-                     item.get("halftime_away_score"), str(item.get("result_type") or "full_time"), now, source_key))
+                incoming_score = (int(item["home_score"]), int(item["away_score"]))
+                stored_result = conn.execute(
+                    "SELECT home_score,away_score FROM match_results WHERE fixture_id=?",
+                    (fixture_id,),
+                ).fetchone()
+                if stored_result and incoming_score != (stored_result["home_score"], stored_result["away_score"]):
+                    # Preserve disagreements as evidence; do not treat a new source as a correction.
+                    conflict = {
+                        "stored": {
+                            "home_score": stored_result["home_score"],
+                            "away_score": stored_result["away_score"],
+                        },
+                        "incoming": {"home_score": incoming_score[0], "away_score": incoming_score[1]},
+                    }
+                    conflict_json = json.dumps(conflict, ensure_ascii=False, sort_keys=True)
+                    conn.execute(
+                        """INSERT INTO field_observations(
+                            fixture_id,field_name,value_json,source_key,source_ref,source_url,captured_at,verification_status
+                        )
+                        SELECT ?,?,?,?,?,?,?,? WHERE NOT EXISTS (
+                            SELECT 1 FROM field_observations WHERE fixture_id=? AND field_name=?
+                              AND value_json=? AND source_key=? AND source_ref IS ?
+                        )""",
+                        (
+                            fixture_id, "score_conflict", conflict_json, source_key, source_ref, source_url, now, "conflict",
+                            fixture_id, "score_conflict", conflict_json, source_key, source_ref,
+                        ),
+                    )
+                else:
+                    conn.execute("""INSERT INTO match_results(fixture_id,home_score,away_score,halftime_home_score,halftime_away_score,
+                        result_type,captured_at,source_key) VALUES(?,?,?,?,?,?,?,?)
+                        ON CONFLICT(fixture_id) DO UPDATE SET home_score=excluded.home_score,away_score=excluded.away_score,
+                        halftime_home_score=COALESCE(excluded.halftime_home_score,match_results.halftime_home_score),
+                        halftime_away_score=COALESCE(excluded.halftime_away_score,match_results.halftime_away_score),
+                        captured_at=excluded.captured_at,source_key=excluded.source_key""",
+                        (fixture_id, incoming_score[0], incoming_score[1], item.get("halftime_home_score"),
+                         item.get("halftime_away_score"), str(item.get("result_type") or "full_time"), now, source_key))
                 conn.execute("UPDATE fixtures SET status='finished',updated_at=? WHERE id=?", (now, fixture_id))
             conn.commit()
             return fixture_id

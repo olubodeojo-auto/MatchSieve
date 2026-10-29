@@ -8,12 +8,14 @@ This file separates code that exists from services that are connected, licensed 
 |---|---|---|---|
 | Local CSV importer | Implemented; offline tests pass | No API key; a permitted source file is needed | Use for controlled historical ingestion after reuse rights review |
 | Local JSON importer | Implemented; offline tests pass | No API key | Use for documented/manual imports |
+| API-Football | Adapter included; live schema/coverage not validated | `API_FOOTBALL_KEY` | Enable explicitly; verify competition coverage, quotas, terms and attribution before use |
 | SportScore | Adapter included; one mapped payload tested; live smoke test outstanding | Optional `SPORTSCORE_API_KEY`; provider calls disabled by default | Verify the selected competition/date, pagination, rate limits, terms and visible attribution obligation; then test a single date |
 | Football-Data.org | Adapter included; live schema/coverage not validated in this environment | `FOOTBALL_DATA_ORG_TOKEN` | Verify permitted competition coverage, auth, date windows, quotas, commercial display and attribution before use |
 | OpenLigaDB | Adapter included; mapping test passes; coverage varies | No API key in the current adapter | Verify league/season coverage and availability on selected dates; decide whether it adds launch value |
-| SportMonks | Catalogue only in MatchSieve | `SPORTMONKS_API_TOKEN` | Not wired to an active adapter in this project; do not assume the old ZIP code/key remains valid |
-| FootballData.io | Catalogue only | `FOOTBALLDATA_IO_API_KEY` | Not wired to an active adapter |
-| LiveFootball | Catalogue only | `LIVEFOOTBALL_API_KEY` | Not wired to an active adapter |
+| SportMonks | Adapter included; live schema/coverage not validated | `SPORTMONKS_API_TOKEN` | Enable explicitly only after validating current endpoint, response mapping, quotas and rights |
+| FootballData.io | Adapter included; live schema/coverage not validated | `FOOTBALLDATA_IO_API_KEY` | Enable explicitly only after validating current endpoint, response mapping, quotas and rights |
+| LiveFootball | Adapter included; live schema/coverage not validated | `LIVEFOOTBALL_API_KEY` | Enable explicitly only after validating current endpoint, response mapping, quotas and rights |
+| TheSportsDB | Adapter included; no live smoke test in this environment | Optional `THESPORTSDB_API_KEY`; shared free key otherwise | Confirm event-time interpretation and coverage before relying on records |
 | ClearSports | Catalogue only | `CLEARSPORTS_API_KEY` | Not wired to an active adapter |
 | The Odds API | Catalogue only | `THE_ODDS_API_KEY` | Odds-only candidate, no current adapter; defer until the core market reports are proven useful |
 | OpenWeather | Catalogue only | `OPENWEATHER_API_KEY` | Low priority, no current adapter |
@@ -21,6 +23,11 @@ This file separates code that exists from services that are connected, licensed 
 | Billing/Stripe | Not implemented | Requires commercial account configuration | Blocker to paid SaaS launch; do not invent credentials/webhooks. Validate business-country eligibility and taxes first |
 | Authentication/account service | Not implemented | A selected identity backend and server-side policy | Blocker to public SaaS launch |
 | Production hosting/API domain | Not implemented | Domain, secret store, TLS, deploy and operations | Blocker to production mobile release and remote customers |
+
+The collection CLI (`collectors`, `collect`, `collection-runs`, `provenance`,
+and `coverage`) is documented in [DATA_COLLECTION.md](./DATA_COLLECTION.md).
+Provider responses use a local expiring cache; it reduces repeated calls but
+does not replace source freshness checks or provider-specific quota controls.
 
 ## Provider rules
 

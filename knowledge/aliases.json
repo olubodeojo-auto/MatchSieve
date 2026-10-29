@@ -1,0 +1,71 @@
+{
+  "competition_aliases": [
+    {
+      "canonical": "WE League Women",
+      "aliases": ["WE League", "WE League Women"],
+      "sources": ["api_football", "livefootball"]
+    }
+  ],
+  "team_aliases": [
+    {
+      "competition": "Liga MX",
+      "canonical": "Guadalajara Chivas",
+      "aliases": ["Guadalajara Chivas", "Guadalajara"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "Liga MX",
+      "canonical": "Atletico San Luis",
+      "aliases": ["Atletico San Luis", "A San Luis"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "Liga MX",
+      "canonical": "Club Queretaro",
+      "aliases": ["Club Queretaro", "Querétaro"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "Liga MX",
+      "canonical": "FC Juarez",
+      "aliases": ["FC Juarez", "Juárez"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "Liga MX",
+      "canonical": "Atlante FC",
+      "aliases": ["Atlante FC", "Atlante"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "CONCACAF Central American Cup",
+      "canonical": "CD Marathon",
+      "aliases": ["CD Marathon", "Marathón"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "WE League Women",
+      "canonical": "INAC Kobe Leonessa W",
+      "aliases": ["INAC Kobe Leonessa W", "Leonessa"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "WE League Women",
+      "canonical": "JEF United W",
+      "aliases": ["JEF United W", "JEF Utd"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "Liga MX Femenil",
+      "canonical": "Guadalajara W",
+      "aliases": ["Guadalajara W", "Guadalajara"],
+      "sources": ["api_football", "livefootball"]
+    },
+    {
+      "competition": "Liga MX Femenil",
+      "canonical": "Necaxa W",
+      "aliases": ["Necaxa W", "Necaxa"],
+      "sources": ["api_football", "livefootball"]
+    }
+  ]
+}

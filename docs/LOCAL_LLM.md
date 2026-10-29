@@ -32,40 +32,51 @@ available RAM. If you have a low-memory machine, close heavy applications before
 The first installation and model download require internet; subsequent local inference
 does not need a hosted AI service.
 
-## 2. Run the MatchSieve test suite
+## 2. Run the MatchSieve test suite and test the real model
+
+First run the automated tests:
 
 ```powershell
 python -m unittest tests.test_local_llm -v
 python -m unittest tests.test_local_llm_pipeline -v
+python -m unittest tests.test_data_quality_synthetic_timestamp -v
 python -m unittest discover -s tests -v
 ```
 
-The local adapter tests mock the HTTP response, so they do not require a downloaded model.
-The complete project suite should be green before merging the pull request. GitHub Actions
-also runs compile checks and unit tests for pushes and pull requests.
+These tests mock the HTTP response and do not require a downloaded model. To verify the
+actual installed model and local API, run:
+
+```powershell
+python scripts/smoke_test_local_llm.py
+```
+
+The smoke test uses clearly labelled fictional evidence, creates no football report, and
+does not make a betting recommendation. GitHub Actions also runs compile checks and unit
+tests for pushes and pull requests.
 
 ## 3. Run the supplied Atletico-MG vs Cruzeiro example
 
 The example under `examples/atletico_mg_cruzeiro.local.json` was transcribed from a user-pasted
 page excerpt. It is not a fresh Soccerway collection, is not independently verified, and
-its capture timestamp is synthetic for demonstration. Do not treat the example as current
-match advice.
+its capture timestamp is synthetic for demonstration. The quality gate deliberately marks
+it for review and excludes it from the local LLM's usable evidence. This is expected and
+prevents a copied page from masquerading as a verified, freshly collected source.
 
-After installing the model, run:
+You can check that the safety gate rejects it with:
 
 ```powershell
 python scripts/run_agent_pipeline.py examples/atletico_mg_cruzeiro.local.json --market RESULT_1X2 --local-llm --output data/atletico-cruzeiro-report.json
 ```
 
-MatchSieve will write:
+This command is a gate test, not a valid match-analysis run. Since the data is not eligible
+for live analysis, the model should receive no usable match evidence. For the real local
+model test, use the synthetic smoke test above. The output files are:
 - `data/atletico-cruzeiro-report.json` — full pipeline output and model analysis.
 - `data/atletico-cruzeiro-report.md` — deterministic evidence report.
-- `data/atletico-cruzeiro-report.llm.json` — structured local LLM response and validation result.
-- `data/atletico-cruzeiro-report.llm.md` — readable local LLM interpretation.
+- `data/atletico-cruzeiro-report.llm.json` — structured local LLM response or insufficient-evidence result.
+- `data/atletico-cruzeiro-report.llm.md` — readable local LLM result and review warnings.
 
-When using an archived sample, the deterministic quality gate may correctly reject the
-record as stale. For live research, use freshly collected records with the true capture
-timestamp and source URL.
+For live research, use freshly collected records with the true capture timestamp and source URL.
 
 ## 4. What the local LLM does and does not do
 

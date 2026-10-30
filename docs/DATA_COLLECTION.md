@@ -87,7 +87,7 @@ results are archived as completed fixtures so the existing research queries
 can use them. The full section bundle and paste provenance are also attached
 to the selected fixture as a source observation.
 
-The supported row formats are one match per line, for example:
+The importer accepts one-line rows and multiline clipboard blocks. It recognises a date followed by competition, home team, away team and score lines (including repeated team labels in accessibility text). It also accepts one-line rows. For example:
 
 ```text
 Last matches: Home Team - Home

@@ -232,33 +232,12 @@ class Handler(BaseHTTPRequestHandler):
                     source_ref=fixture_payload["source_ref"], source_url=source_url,
                     raw_payload={"fixture": {k: v for k, v in fixture_payload.items() if k != "pasted_match_history"}, "history": parsed},
                 )
-                imported = 0
-                import_errors = []
-                for section_name, rows in parsed["sections"].items():
-                    for index, row in enumerate(rows, start=1):
-                        try:
-                            history_item = {
-                                "home_team": row["home_team"], "away_team": row["away_team"],
-                                "competition": row["competition"], "kickoff_utc": row["date"],
-                                "home_score": row["home_score"], "away_score": row["away_score"],
-                                "status": "finished", "source_key": source_key,
-                                "source_ref": f"{parsed['source_sha256'][:16]}:{section_name}:{index}",
-                                "history_section": section_name,
-                                "history_venue_context": row["venue_context"],
-                            }
-                            self.repo.add_fixture(
-                                history_item, source_key=source_key,
-                                source_ref=history_item["source_ref"], source_url=source_url,
-                                raw_payload={"section": section_name, "record": row, "paste_sha256": parsed["source_sha256"]},
-                            )
-                            imported += 1
-                        except (TypeError, ValueError, KeyError) as exc:
-                            import_errors.append(f"{section_name} record {index}: {exc}")
                 result = {
                     "fixture_id": fixture_id, "fixture": mobile_fixture(self.repo.get_fixture(fixture_id) or {}),
-                    "status": "partial" if parsed["errors"] or import_errors else "success",
+                    "status": parsed["status"],
                     "sections": parsed["coverage"], "records_parsed": parsed["total_records"],
-                    "historical_records_archived": imported, "warnings": parsed["errors"] + import_errors,
+                    "historical_records_archived": parsed["total_records"],
+                    "warnings": parsed["errors"],
                     "ignored_noise_lines": parsed["ignored_noise_lines"],
                     "excluded_fields": parsed["excluded_fields"],
                 }

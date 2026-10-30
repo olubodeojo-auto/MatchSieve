@@ -26,6 +26,12 @@ def report_to_markdown(e: dict[str,Any], narrative: str | None=None) -> str:
         f"**Research status:** `{e['status']}`  ",f"**Generated:** {e['generated_at']}  ","**Publication status:** Draft — not published", "",
         "> This is an evidence-led research summary, not a guaranteed outcome or instruction to place a bet. All figures reflect records stored in the local archive at generation time.","",
         "## The market question",mk['question'],"", "## Evidence from recent completed matches",fmt_sample(e['home_form']),"",fmt_sample(e['away_form']),"",
+    if e.get("history_coverage"):
+        lines += ["## Pasted history coverage"]
+        for key, label in (("home_form", "Home-team form"), ("away_form", "Away-team form"), ("h2h", "Head-to-head")):
+            coverage = e["history_coverage"].get(key, {})
+            lines.append(f"- {label}: {coverage.get('records_found', 0)}/35 records captured; {coverage.get('status', 'unknown')}.")
+    lines += [""]
         "## Signals that may support this market"]
     lines += [f"- {x}" for x in (e['supporting_signals'] or ["No supporting historical indicators are available."])]
     lines += ["", "## Signals against it / reasons for caution"]

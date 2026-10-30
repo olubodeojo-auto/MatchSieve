@@ -201,6 +201,69 @@ class Handler(BaseHTTPRequestHandler):
             self._send(400, {"error": str(exc) or "Invalid JSON body."})
             return
         try:
+            if path == "/api/paste-import":
+                from .paste_importer import parse_match_history_paste
+                home = str(body.get("home_team") or "").strip()
+                away = str(body.get("away_team") or "").strip()
+                competition = str(body.get("competition") or "").strip()
+                kickoff = str(body.get("kickoff") or "").strip()
+                source_url = str(body.get("source_url") or "").strip() or None
+                source_name = str(body.get("source_name") or "manual clipboard paste").strip()
+                if not home or not away or not competition or not kickoff:
+                    raise ValueError("Home team, away team, competition and fixture date/time are required.")
+                if home.casefold() == away.casefold():
+                    raise ValueError("Home and away teams must be different.")
+                parsed = parse_match_history_paste(
+                    str(body.get("text") or ""), source_name=source_name,
+                    home_team=home, away_team=away,
+                )
+                if not parsed["total_records"]:
+                    self._send(422, {"error": "No match-history rows were recognised. Keep the three section headings and use one match per line with date, competition, teams and score.", "preview": parsed})
+                    return
+                source_key = "manual_match_history_paste"
+                fixture_payload = {
+                    "home_team": home, "away_team": away, "competition": competition,
+                    "kickoff_utc": kickoff, "status": "scheduled", "source_key": source_key,
+                    "source_ref": "paste:" + parsed["source_sha256"][:16],
+                    "source_url": source_url, "pasted_match_history": parsed,
+                }
+                fixture_id = self.repo.add_fixture(
+                    fixture_payload, source_key=source_key,
+                    source_ref=fixture_payload["source_ref"], source_url=source_url,
+                    raw_payload={"fixture": {k: v for k, v in fixture_payload.items() if k != "pasted_match_history"}, "history": parsed},
+                )
+                imported = 0
+                import_errors = []
+                for section_name, rows in parsed["sections"].items():
+                    for index, row in enumerate(rows, start=1):
+                        try:
+                            history_item = {
+                                "home_team": row["home_team"], "away_team": row["away_team"],
+                                "competition": row["competition"], "kickoff_utc": row["date"] + "T12:00:00Z",
+                                "home_score": row["home_score"], "away_score": row["away_score"],
+                                "status": "finished", "source_key": source_key,
+                                "source_ref": f"{parsed['source_sha256'][:16]}:{section_name}:{index}",
+                                "history_section": section_name,
+                                "history_venue_context": row["venue_context"],
+                            }
+                            self.repo.add_fixture(
+                                history_item, source_key=source_key,
+                                source_ref=history_item["source_ref"], source_url=source_url,
+                                raw_payload={"section": section_name, "record": row, "paste_sha256": parsed["source_sha256"]},
+                            )
+                            imported += 1
+                        except (TypeError, ValueError, KeyError) as exc:
+                            import_errors.append(f"{section_name} record {index}: {exc}")
+                result = {
+                    "fixture_id": fixture_id, "fixture": mobile_fixture(self.repo.get_fixture(fixture_id) or {}),
+                    "status": "partial" if parsed["errors"] or import_errors else "success",
+                    "sections": parsed["coverage"], "records_parsed": parsed["total_records"],
+                    "historical_records_archived": imported, "warnings": parsed["errors"] + import_errors,
+                    "ignored_noise_lines": parsed["ignored_noise_lines"],
+                    "excluded_fields": parsed["excluded_fields"],
+                }
+                self._send(201, result)
+                return
             if path == "/api/fixture":
                 fixture_id = self.repo.add_fixture(
                     body, source_key=body.get("source_key", "manual"),

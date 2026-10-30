@@ -65,3 +65,45 @@ operator's rights to use the files.
 No live source smoke test was performed. Keep source records attributed,
 review data-use terms before commercial use, and treat incomplete or
 timezone-uncertain records as unverified evidence.
+
+## Manual match-history paste importer
+
+The local research desk includes an operator-only paste intake at **Data setup → Paste
+match history**. It accepts copied text supplied manually by the operator; it
+does not open, crawl, scrape, or call Flashscore or Soccerway.
+
+Before copying a match page, expand each history panel separately:
+- Home team's last matches
+- Away team's last matches
+- Head-to-head matches
+
+The parser keeps these three sections separate, deduplicates repeated rows
+within each section, and records the count found against the 35-record target.
+A count below 35 is explicitly marked incomplete or not supplied; it is never
+treated as a complete sample. Each recognised result retains its date,
+competition (or an explicit Unknown competition value when absent), actual
+home/away teams, score, source hash and section/venue context. Parsed history
+results are archived as completed fixtures so the existing research queries
+can use them. The full section bundle and paste provenance are also attached
+to the selected fixture as a source observation.
+
+The supported row formats are one match per line, for example:
+
+```text
+Last matches: Home Team - Home
+25.10.2026 | League Name | Club A - Club B | 2-1
+Last matches: Away Team - Away
+24.10.2026 | Cup Name | Club C - Club D | 0-0
+Head-to-head matches
+10.05.2026 | League Name | Home Team - Away Team | 1-0
+```
+
+Rows without an unambiguous date, team pairing and score are not guessed.
+Unrecognised layouts, missing sections, unknown competitions and import
+conflicts must be reviewed rather than silently filled. Odds, bookmaker names,
+betting links and advertisements are excluded from this QQR dataset.
+
+The 35-record figure is a collection target, not a promise that a source has
+35 available matches. The importer only reports what was actually present in
+the pasted text. Validate source terms and your right to process copied data
+before commercial use.

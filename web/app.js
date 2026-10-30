@@ -230,7 +230,7 @@ async function importPastedHistory() {
       `Unrelated/noise lines ignored: ${result.ignored_noise_lines || 0}`,
       ...warnings.map((warning) => `Warning: ${warning}`),
       'Odds, bookmaker names, betting links and advertisements are excluded.'
-    ].join('\\n');
+    ].join('\n');
     setMessage('pasteImportMessage', result.status === 'success' ? 'History imported.' : 'Import completed with gaps or warnings. Review the section counts.', result.status === 'success' ? 'success' : 'warning');
     await Promise.all([loadFixtures($('fixtureSearch').value), loadStatus()]);
   } catch (error) {

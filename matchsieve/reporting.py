@@ -24,7 +24,7 @@ def report_to_markdown(e: dict[str,Any], narrative: str | None=None) -> str:
     f=e['fixture']; mk=e['market']
     lines=[f"# {f['home_team']} vs {f['away_team']}","",
         f"**Competition:** {f['competition']}  ",f"**Kickoff (stored UTC):** {f['kickoff_utc']}  ",f"**Market requested:** {mk['label']}  ",
-        f"**Research status:** \`{e['status']}\`  ",f"**Generated:** {e['generated_at']}  ","**Publication status:** Draft — not published", "",
+        f"**Research status:** `{e['status']}`  ",f"**Generated:** {e['generated_at']}  ","**Publication status:** Draft — not published", "",
         "> This is an evidence-led research summary, not a guaranteed outcome or instruction to place a bet. All figures reflect records stored in the local archive at generation time.","",
         "## The market question",mk['question'],"", "## Evidence from recent completed matches",fmt_sample(e['home_form']),"",fmt_sample(e['away_form']),""]
     if e.get("history_coverage"):
@@ -47,7 +47,7 @@ def report_to_markdown(e: dict[str,Any], narrative: str | None=None) -> str:
     lines += ["", "## Source record"]
     if e['sources']:
         for s in e['sources']:
-            lines.append(f"- Source: \`{s.get('source_key')}\` | Captured: {s.get('captured_at')} | Reference: {s.get('source_ref') or 'not supplied'} | URL: {s.get('source_url') or 'not supplied'} | Quality: {s.get('quality_label')}")
+            lines.append(f"- Source: `{s.get('source_key')}` | Captured: {s.get('captured_at')} | Reference: {s.get('source_ref') or 'not supplied'} | URL: {s.get('source_url') or 'not supplied'} | Quality: {s.get('quality_label')}")
             if str(s.get('source_key') or '').lower() == 'sportscore':
                 lines.append('  - Attribution: Powered by SportScore — https://sportscore.com/')
     else: lines.append("- No source snapshot attached.")

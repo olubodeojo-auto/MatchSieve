@@ -200,6 +200,45 @@ async function loadProviders() {
     }).join('') || '<p class="muted">No providers listed.</p>';
   } catch (error) { $('providerList').textContent = error.message; }
 }
+async function importPastedHistory() {
+  const home_team = $('pasteHome').value.trim();
+  const away_team = $('pasteAway').value.trim();
+  const competition = $('pasteCompetition').value.trim();
+  const kickoff = $('pasteKickoff').value;
+  const text = $('pasteText').value;
+  if (!home_team || !away_team || !competition || !kickoff || !text.trim()) {
+    setMessage('pasteImportMessage', 'Complete the fixture details and paste the copied match page text.', 'error');
+    return;
+  }
+  const button = $('pasteImportBtn');
+  button.disabled = true;
+  setMessage('pasteImportMessage', 'Reading the three history sections and checking the records…');
+  $('pasteImportResult').textContent = '';
+  try {
+    const result = await api('/api/paste-import', { method: 'POST', body: JSON.stringify({
+      home_team, away_team, competition, kickoff: new Date(kickoff).toISOString(),
+      source_url: $('pasteSource').value.trim(), source_name: 'manual clipboard paste', text
+    }) });
+    const sections = Object.entries(result.sections || {}).map(([key, value]) =>
+      `${key.replaceAll('_', ' ')}: ${value.records_found}/35${value.complete_to_target ? ' (target reached)' : ' (incomplete / not supplied)'}`
+    );
+    const warnings = Array.isArray(result.warnings) ? result.warnings : [];
+    $('pasteImportResult').textContent = [
+      `Fixture saved: #${result.fixture_id}`,
+      `History records parsed: ${result.records_parsed}; archived: ${result.historical_records_archived}`,
+      ...sections,
+      `Unrelated/noise lines ignored: ${result.ignored_noise_lines || 0}`,
+      ...warnings.map((warning) => `Warning: ${warning}`),
+      'Odds, bookmaker names, betting links and advertisements are excluded.'
+    ].join('\\n');
+    setMessage('pasteImportMessage', result.status === 'success' ? 'History imported.' : 'Import completed with gaps or warnings. Review the section counts.', result.status === 'success' ? 'success' : 'warning');
+    await Promise.all([loadFixtures($('fixtureSearch').value), loadStatus()]);
+  } catch (error) {
+    setMessage('pasteImportMessage', error.message, 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
 async function importCsv() {
   const filename = $('csvFilename').value.trim();
   if (!filename) { setMessage('intakeMessage', 'Enter a CSV filename stored inside data/inbox/.', 'error'); return; }
@@ -278,7 +317,7 @@ $('researchBtn').addEventListener('click', runResearch);
 $('refreshHistory').addEventListener('click', loadHistory);
 $('downloadReport').addEventListener('click', downloadMarkdown);
 $('copyReport').addEventListener('click', copyMarkdown);
-$('importCsvBtn').addEventListener('click', importCsv);
+$('importCsvBtn').addEventListener('click', importCsv);\n$('pasteImportBtn').addEventListener('click', importPastedHistory);
 $('addFixtureBtn').addEventListener('click', addFixture);
 $('kbSearchBtn').addEventListener('click', searchKnowledge);
 $('providerFetchBtn').addEventListener('click', fetchProvider);

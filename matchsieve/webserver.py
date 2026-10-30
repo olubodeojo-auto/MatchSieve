@@ -239,7 +239,7 @@ class Handler(BaseHTTPRequestHandler):
                         try:
                             history_item = {
                                 "home_team": row["home_team"], "away_team": row["away_team"],
-                                "competition": row["competition"], "kickoff_utc": row["date"] + "T12:00:00Z",
+                                "competition": row["competition"], "kickoff_utc": row["date"],
                                 "home_score": row["home_score"], "away_score": row["away_score"],
                                 "status": "finished", "source_key": source_key,
                                 "source_ref": f"{parsed['source_sha256'][:16]}:{section_name}:{index}",

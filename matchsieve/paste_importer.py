@@ -109,6 +109,7 @@ def parse_match_history_paste(
         "home_form": [], "away_form": [], "h2h": []
     }
     seen: dict[str, set[tuple[Any, ...]]] = {key: set() for key in sections}
+    observed_scores: dict[tuple[Any, ...], tuple[int, int, str]] = {}
     errors: list[str] = []
     current: str | None = None
     ignored_noise = 0
@@ -129,13 +130,24 @@ def parse_match_history_paste(
         record = _parse_record(line, current)
         if not record:
             continue
-        identity = (
-            record["date"], record["home_team"].casefold(), record["away_team"].casefold(),
-            record["home_score"], record["away_score"],
-        )
+        match_key = (record["date"], record["home_team"].casefold(), record["away_team"].casefold())
+        score = (record["home_score"], record["away_score"])
+        previous = observed_scores.get(match_key)
+        if previous and previous[:2] != score:
+            errors.append(
+                f"Conflicting scores for {record['home_team']} v {record['away_team']} on {record['date']}: "
+                f"{previous[0]}-{previous[1]} in {previous[2]} versus {score[0]}-{score[1]} in {current}."
+            )
+        else:
+            observed_scores[match_key] = (score[0], score[1], current)
+        identity = (*match_key, *score)
         if identity in seen[current]:
             continue
         seen[current].add(identity)
+        if record["competition"] == "Unknown competition":
+            errors.append(
+                f"{current}: competition is not present for {record['home_team']} v {record['away_team']} on {record['date']}."
+            )
         if len(sections[current]) == MAX_MATCHES_PER_SECTION:
             errors.append(f"{current}: more than 35 records were present; only the first 35 were retained.")
             continue

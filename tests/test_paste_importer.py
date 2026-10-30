@@ -1,6 +1,10 @@
+import tempfile
 import unittest
+from pathlib import Path
 
-from matchsieve.paste_importer import parse_match_history_paste\nfrom matchsieve.repository import Repository
+from matchsieve.analytics import build_evidence
+from matchsieve.paste_importer import parse_match_history_paste
+from matchsieve.repository import Repository
 
 
 class MatchHistoryPasteTests(unittest.TestCase):

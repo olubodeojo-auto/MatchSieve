@@ -89,7 +89,12 @@ def build_evidence(repo: Repository, fixture_id: int, market_code: str, sample_s
     missing=[]
     if home['sample_size']<5: missing.append(f"Only {home['sample_size']} prior completed match(es) found for {fixture['home_team']}; five-match form comparison is incomplete.")
     if away['sample_size']<5: missing.append(f"Only {away['sample_size']} prior completed match(es) found for {fixture['away_team']}; five-match form comparison is incomplete.")
-    if history_coverage:\n        for section_key, section_label in (("home_form", "home-team form"), ("away_form", "away-team form"), ("h2h", "head-to-head")):\n            section_count = int(history_coverage.get(section_key, {}).get("records_found", 0))\n            if section_count < 35:\n                missing.append(f"Only {section_count} of up to 35 {section_label} records were captured; the available sample is incomplete.")\n    for wanted,label in (("injuries","current injury information"),("suspensions","current suspension information"),("lineups","confirmed line-ups")):
+    if history_coverage:
+        for section_key, section_label in (("home_form", "home-team form"), ("away_form", "away-team form"), ("h2h", "head-to-head")):
+            section_count = int(history_coverage.get(section_key, {}).get("records_found", 0))
+            if section_count < 35:
+                missing.append(f"Only {section_count} of up to 35 {section_label} records were captured; the available sample is incomplete.")
+    for wanted,label in (("injuries","current injury information"),("suspensions","current suspension information"),("lineups","confirmed line-ups")):
         if wanted not in observations: missing.append(f"{label.capitalize()} not captured for this fixture.")
     source_count=0
     import sqlite3

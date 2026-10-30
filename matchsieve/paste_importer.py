@@ -96,6 +96,67 @@ def _parse_record(line: str, section: str) -> dict[str, Any] | None:
     }
 
 
+
+def _parse_multiline_record(lines: list[str], section: str) -> dict[str, Any] | None:
+    if not lines:
+        return None
+    joined = " | ".join(line.strip() for line in lines if line.strip())
+    inline = _parse_record(joined, section)
+    if inline:
+        return inline
+    date_match = DATE_RE.search(lines[0])
+    if not date_match:
+        return None
+    day, month, year = map(int, date_match.groups())
+    try:
+        match_date = datetime(year, month, day).date().isoformat()
+    except ValueError:
+        return None
+    score: tuple[int, int] | None = None
+    score_index = -1
+    for index, line in enumerate(lines[1:], start=1):
+        value = line.strip()
+        combined = re.fullmatch(r"(\d{1,2})\s*[-:–]\s*(\d{1,2})", value)
+        if combined:
+            score = (int(combined.group(1)), int(combined.group(2)))
+            score_index = index
+            break
+        if value.isdigit() and index + 1 < len(lines) and lines[index + 1].strip().isdigit():
+            first, second = int(value), int(lines[index + 1].strip())
+            if first <= 30 and second <= 30:
+                score = (first, second)
+                score_index = index
+                break
+    if score is None or score[0] > 30 or score[1] > 30:
+        return None
+    candidates: list[str] = []
+    for raw in lines[1:score_index]:
+        value = _clean(raw)
+        if not value or DATE_RE.search(value) or re.fullmatch(r"\d{1,2}:\d{2}", value):
+            continue
+        if value.casefold() in {"w", "d", "l", "ft", "aet", "pen", "home", "away", "overall"}:
+            continue
+        if value.isdigit():
+            continue
+        if candidates and candidates[-1].casefold() == value.casefold():
+            continue
+        candidates.append(value)
+    if len(candidates) < 2:
+        return None
+    home, away = candidates[-2], candidates[-1]
+    competition = " ".join(candidates[:-2]).strip() or "Unknown competition"
+    if home.casefold() == away.casefold():
+        return None
+    return {
+        "date": match_date, "competition": competition,
+        "home_team": home, "away_team": away,
+        "home_score": score[0], "away_score": score[1],
+        "section": section,
+        "venue_context": "home" if section == "home_form" else "away" if section == "away_form" else "head_to_head",
+        "result": "W" if score[0] > score[1] else "D" if score[0] == score[1] else "L",
+        "raw_line": joined,
+    }
+
 def parse_match_history_paste(
     text: str, *, source_name: str = "manual-paste", home_team: str = "", away_team: str = ""
 ) -> dict[str, Any]:
@@ -114,22 +175,17 @@ def parse_match_history_paste(
     current: str | None = None
     ignored_noise = 0
 
-    for raw in text.splitlines():
-        line = raw.strip()
-        if not line:
-            continue
-        detected = _section_for(line, home_team, away_team)
-        if detected:
-            current = detected
-            continue
-        if current is None:
-            continue
-        if NOISE_RE.search(line):
-            ignored_noise += 1
-            continue
-        record = _parse_record(line, current)
+    pending: list[str] = []
+
+    def flush_pending() -> None:
+        nonlocal pending
+        if not pending or current is None:
+            pending = []
+            return
+        record = _parse_multiline_record(pending, current)
+        pending = []
         if not record:
-            continue
+            return
         match_key = (record["date"], record["home_team"].casefold(), record["away_team"].casefold())
         score = (record["home_score"], record["away_score"])
         previous = observed_scores.get(match_key)
@@ -142,7 +198,7 @@ def parse_match_history_paste(
             observed_scores[match_key] = (score[0], score[1], current)
         identity = (*match_key, *score)
         if identity in seen[current]:
-            continue
+            return
         seen[current].add(identity)
         if record["competition"] == "Unknown competition":
             errors.append(
@@ -150,8 +206,29 @@ def parse_match_history_paste(
             )
         if len(sections[current]) == MAX_MATCHES_PER_SECTION:
             errors.append(f"{current}: more than 35 records were present; only the first 35 were retained.")
-            continue
+            return
         sections[current].append(record)
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        detected = _section_for(line, home_team, away_team)
+        if detected:
+            flush_pending()
+            current = detected
+            continue
+        if current is None:
+            continue
+        if NOISE_RE.search(line):
+            ignored_noise += 1
+            continue
+        if DATE_RE.search(line):
+            flush_pending()
+            pending = [line]
+        elif pending and len(pending) < 18:
+            pending.append(line)
+    flush_pending()
 
     coverage = {}
     for key, records in sections.items():

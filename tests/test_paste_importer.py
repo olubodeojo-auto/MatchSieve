@@ -68,7 +68,7 @@ class MatchHistoryPasteTests(unittest.TestCase):
         self.assertFalse(result["coverage"]["home_form"]["complete_to_target"] is False)
 
     def test_conflicting_scores_are_flagged(self):
-        text = "\\n".join([
+        text = "\n".join([
             "Last matches: Le Havre - Home",
             "25.10.2026 | League | Marseille - Le Havre | 4-3",
             "Head-to-head matches",
@@ -78,7 +78,7 @@ class MatchHistoryPasteTests(unittest.TestCase):
         self.assertTrue(any("Conflicting scores" in warning for warning in result["errors"]))
 
     def test_unknown_competition_is_flagged(self):
-        text = "Last matches: Le Havre - Home\\n25.10.2026 Marseille - Le Havre 4-3"
+        text = "Last matches: Le Havre - Home\n25.10.2026 Marseille - Le Havre 4-3"
         result = parse_match_history_paste(text, home_team="Le Havre", away_team="PSG")
         self.assertEqual(result["sections"]["home_form"][0]["competition"], "Unknown competition")
         self.assertTrue(any("competition is not present" in warning for warning in result["errors"]))

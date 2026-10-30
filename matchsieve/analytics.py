@@ -34,19 +34,62 @@ def _summary(results: list[dict[str, Any]], team: str) -> dict[str, Any]:
             "clean_sheets":sum(r['clean_sheet'] for r in results),"wdl":wdl}
 
 
+
+def _summary_from_section(records: list[dict[str, Any]], team: str) -> dict[str, Any]:
+    prepared: list[dict[str, Any]] = []
+    for row in records:
+        home_score, away_score = int(row["home_score"]), int(row["away_score"])
+        if str(row["home_team"]).casefold() == team.casefold():
+            goals_for, goals_against = home_score, away_score
+        elif str(row["away_team"]).casefold() == team.casefold():
+            goals_for, goals_against = away_score, home_score
+        else:
+            continue
+        total = home_score + away_score
+        prepared.append({
+            "kickoff_utc": row["date"], "home_team": row["home_team"], "away_team": row["away_team"],
+            "home_score": home_score, "away_score": away_score, "goals_for": goals_for,
+            "goals_against": goals_against, "total_goals": total,
+            "btts": int(home_score > 0 and away_score > 0),
+            "clean_sheet": int(goals_against == 0),
+        })
+    prepared.sort(key=lambda item: item["kickoff_utc"], reverse=True)
+    return _summary(prepared, team)
+
+
+def _h2h_from_section(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [{
+        "kickoff_utc": row["date"], "home_team": row["home_team"], "away_team": row["away_team"],
+        "competition": row["competition"], "home_score": row["home_score"], "away_score": row["away_score"],
+    } for row in records]
+
 def build_evidence(repo: Repository, fixture_id: int, market_code: str, sample_size: int=10) -> dict[str, Any]:
     if market_code not in MARKETS: raise ValueError(f"Unknown market {market_code}. Choose one of: {', '.join(MARKETS)}")
     fixture=repo.get_fixture(fixture_id)
     if not fixture: raise ValueError(f"Fixture ID {fixture_id} not found")
     kickoff=fixture['kickoff_utc']
-    home=_summary(repo.recent_team_results(fixture['home_team'],kickoff,sample_size),fixture['home_team'])
-    away=_summary(repo.recent_team_results(fixture['away_team'],kickoff,sample_size),fixture['away_team'])
-    h2h=repo.h2h_results(fixture['home_team'],fixture['away_team'],kickoff,10)
     observations=repo.observations(fixture_id)
+    pasted_rows = observations.get("pasted_match_history", [])
+    pasted = pasted_rows[0].get("value") if pasted_rows else None
+    pasted_sections = (pasted or {}).get("sections", {}) if isinstance(pasted, dict) else {}
+    if pasted_sections:
+        home_records = pasted_sections.get("home_form", [])
+        away_records = pasted_sections.get("away_form", [])
+        h2h_records = pasted_sections.get("h2h", [])
+        home = _summary_from_section(home_records, fixture["home_team"])
+        away = _summary_from_section(away_records, fixture["away_team"])
+        h2h = _h2h_from_section(h2h_records)
+        sample_size = 35
+        history_coverage = (pasted or {}).get("coverage", {})
+    else:
+        home=_summary(repo.recent_team_results(fixture['home_team'],kickoff,sample_size),fixture['home_team'])
+        away=_summary(repo.recent_team_results(fixture['away_team'],kickoff,sample_size),fixture['away_team'])
+        h2h=repo.h2h_results(fixture['home_team'],fixture['away_team'],kickoff,10)
+        history_coverage = {}
     missing=[]
     if home['sample_size']<5: missing.append(f"Only {home['sample_size']} prior completed match(es) found for {fixture['home_team']}; five-match form comparison is incomplete.")
     if away['sample_size']<5: missing.append(f"Only {away['sample_size']} prior completed match(es) found for {fixture['away_team']}; five-match form comparison is incomplete.")
-    for wanted,label in (("injuries","current injury information"),("suspensions","current suspension information"),("lineups","confirmed line-ups"),("odds","verified market odds")):
+    if history_coverage:\n        for section_key, section_label in (("home_form", "home-team form"), ("away_form", "away-team form"), ("h2h", "head-to-head")):\n            section_count = int(history_coverage.get(section_key, {}).get("records_found", 0))\n            if section_count < 35:\n                missing.append(f"Only {section_count} of up to 35 {section_label} records were captured; the available sample is incomplete.")\n    for wanted,label in (("injuries","current injury information"),("suspensions","current suspension information"),("lineups","confirmed line-ups")):
         if wanted not in observations: missing.append(f"{label.capitalize()} not captured for this fixture.")
     source_count=0
     import sqlite3
@@ -94,6 +137,6 @@ def build_evidence(repo: Repository, fixture_id: int, market_code: str, sample_s
         supportive.append("Use recent form, goals, H2H and verified contextual observations together; do not treat any one indicator as decisive.")
         counter.append("The current archive cannot establish a forecast when key context or sample sizes are missing.")
     return {"fixture":fixture,"market_code":market_code,"market":market,"status":status,"generated_at":__import__('matchsieve.normalise',fromlist=['utc_now']).utc_now(),
-            "home_form":home,"away_form":away,"h2h":h2h,"supporting_signals":supportive,"counter_signals":counter,
+            "home_form":home,"away_form":away,"h2h":h2h,"history_coverage":history_coverage,"supporting_signals":supportive,"counter_signals":counter,
             "missing_information":missing,"observations":observations,"sources":sources,"source_snapshot_count":source_count,
             "method_note":"Counts describe only records currently stored in the local archive. They are not probabilities, predictions, or a guarantee of future outcomes."}

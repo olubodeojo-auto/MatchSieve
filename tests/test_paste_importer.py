@@ -1,6 +1,6 @@
 import unittest
 
-from matchsieve.paste_importer import parse_match_history_paste
+from matchsieve.paste_importer import parse_match_history_paste\nfrom matchsieve.repository import Repository
 
 
 class MatchHistoryPasteTests(unittest.TestCase):
@@ -122,6 +122,23 @@ class MatchHistoryPasteTests(unittest.TestCase):
         self.assertEqual((result["sections"]["home_form"][0]["home_score"], result["sections"]["home_form"][0]["away_score"]), (4, 3))
         self.assertEqual(result["sections"]["away_form"][0]["away_team"], "PSG")
         self.assertEqual(result["sections"]["h2h"][0]["home_team"], "Le Havre")
+
+    def test_qqr_uses_each_pasted_section_without_mixing(self):
+        parsed = parse_match_history_paste(self.sample(), home_team="Le Havre", away_team="PSG")
+        with tempfile.TemporaryDirectory() as temp:
+            repo = Repository(Path(temp) / "matchsieve.sqlite3")
+            fixture_id = repo.add_fixture({
+                "home_team": "Le Havre", "away_team": "PSG",
+                "competition": "France Ligue 1", "kickoff_utc": "2026-10-30T19:00:00Z",
+                "status": "scheduled", "source_key": "manual_match_history_paste",
+                "source_ref": "paste-test", "pasted_match_history": parsed,
+            }, source_key="manual_match_history_paste", source_ref="paste-test",
+               raw_payload={"history": parsed})
+            evidence = build_evidence(repo, fixture_id, "UNDER_4_5")
+            self.assertEqual(evidence["home_form"]["sample_size"], 2)
+            self.assertEqual(evidence["away_form"]["sample_size"], 2)
+            self.assertEqual(len(evidence["h2h"]), 2)
+            self.assertEqual(evidence["history_coverage"]["h2h"]["records_found"], 2)
 
     def test_invalid_date_is_not_silently_accepted(self):
         result = parse_match_history_paste(

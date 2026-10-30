@@ -95,7 +95,17 @@
           <summary><span><span class="operator-mark">⌘</span><span><strong>Data setup & integrations</strong><small>Local operator tools · hidden from the main customer flow</small></span></span><span class="summary-arrow">⌄</span></summary>
           <div class="operator-body">
             <div class="operator-intro"><p class="eyebrow">OPERATOR WORKSPACE</p><h3>Bring permitted data into MatchSieve</h3><p>These controls are for local development and curation, not for public customer access. Before public deployment, this area must be moved behind administrator authentication.</p></div>
-            <div class="operator-grid">
+            <div class="operator-grid"><div class="operator-card paste-import-card"><h4>Paste match history</h4><p>Paste the copied match page text. Keep the home form, away form and H2H headings. Expand each section separately on the source page before copying. Only recognised football results are saved.</p><div class="manual-form">
+                <label for="pasteHome">Fixture home team</label><input id="pasteHome" placeholder="e.g. Le Havre">
+                <label for="pasteAway">Fixture away team</label><input id="pasteAway" placeholder="e.g. PSG">
+                <label for="pasteCompetition">Competition</label><input id="pasteCompetition" placeholder="e.g. France Ligue 1">
+                <label for="pasteKickoff">Fixture date and time</label><input id="pasteKickoff" type="datetime-local">
+                <label for="pasteSource">Source page URL (optional)</label><input id="pasteSource" type="url" placeholder="https://…">
+                <label for="pasteText">Copied match page text</label><textarea id="pasteText" rows="12" placeholder="Paste the full copied page text here. Include all three history section headings and match rows."></textarea>
+                <button id="pasteImportBtn" class="secondary-button" type="button">Preview and import history</button>
+                <div id="pasteImportMessage" class="inline-message" aria-live="polite"></div>
+                <div id="pasteImportResult" class="paste-import-result" aria-live="polite"></div>
+              </div></div>
               <div class="operator-card"><h4>Import a CSV</h4><p>Place a file in <code>data/inbox/</code> first. The importer recognises common football-results columns.</p><div class="form-row"><input id="csvFilename" placeholder="filename.csv" aria-label="CSV filename"><button id="importCsvBtn" class="secondary-button" type="button">Import</button></div><div id="intakeMessage" class="inline-message" aria-live="polite"></div></div>
               <div class="operator-card"><h4>Add one fixture</h4><p>Useful for local smoke tests. A manually added future fixture has no history unless matching completed results are imported.</p><div class="manual-form"><input id="mHome" placeholder="Home team"><input id="mAway" placeholder="Away team"><input id="mComp" placeholder="Competition"><label for="mKickoff">Kickoff date and time</label><input id="mKickoff" type="datetime-local"><input id="mSource" placeholder="Source note / reference"><button id="addFixtureBtn" class="secondary-button" type="button">Save fixture</button></div></div>
               <div class="operator-card"><h4>Fetch from an approved provider</h4><p>Only the selected adapter runs, and only after it is enabled in <code>.env</code>. A fetch can consume quota and must comply with the source licence.</p><div class="manual-form">

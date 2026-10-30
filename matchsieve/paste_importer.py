@@ -7,32 +7,37 @@ from typing import Any
 
 MAX_PASTE_CHARS = 200_000
 MAX_MATCHES_PER_SECTION = 35
-SECTION_ALIASES = {
-    "home_form": ("last matches: home", "last matches home", "home team last matches", "home form", "overall - home"),
-    "away_form": ("last matches: away", "last matches away", "away team last matches", "away form", "overall - away"),
-    "h2h": ("head-to-head matches", "head to head matches", "head-to-head", "h2h"),
-}
-DATE_RE = re.compile(r"(?<!\\d)(\\d{1,2})[./-](\\d{1,2})[./-](\\d{4})(?!\\d)")
-SCORE_RE = re.compile(r"(?<!\\d)(\\d{1,2})\\s*[-:–]\\s*(\\d{1,2})(?!\\d)")
-NOISE_RE = re.compile(r"(?i)\\b(?:odds?|bet9ja|1xbet|betking|advertisement|sponsored|casino|bonus)\\b")
+DATE_RE = re.compile(r"(?<!\d)(\d{1,2})[./-](\d{1,2})[./-](\d{4})(?!\d)")
+SCORE_RE = re.compile(r"(?<!\d)(\d{1,2})\s*[-:–]\s*(\d{1,2})(?!\d)")
+NOISE_RE = re.compile(r"(?i)\b(?:odds?|bet9ja|1xbet|betking|advertisement|sponsored|casino|bonus)\b")
 
 
-def _section_for(line: str, home_team: str = "", away_team: str = "") -> str | None:
-    value = re.sub(r"\\s+", " ", line.strip().lower())
-    for section, aliases in SECTION_ALIASES.items():
-        if any(alias in value for alias in aliases):
-            return section
-    return None
-
-
-def normalise_label(value: str) -> str:
+def _normalise_label(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", value.lower())
 
 
-def _clean_line(line: str) -> str:
-    line = re.sub(r"\\s+", " ", line).strip()
-    line = re.sub(r"(?i)\\b(?:W|D|L|FT|AET|PEN)\\s*$", "", line).strip()
-    return line.strip(" |·•")
+def _section_for(line: str, home_team: str, away_team: str) -> str | None:
+    value = re.sub(r"\s+", " ", line.strip().lower())
+    compact = _normalise_label(value)
+    if any(token in value for token in ("head-to-head", "head to head", "h2h")):
+        return "h2h"
+    home = _normalise_label(home_team)
+    away = _normalise_label(away_team)
+    if home and home in compact and ("home" in value or "last matches" in value):
+        return "home_form"
+    if away and away in compact and ("away" in value or "last matches" in value):
+        return "away_form"
+    if value in {"last matches: home", "last matches home", "home form", "overall - home"}:
+        return "home_form"
+    if value in {"last matches: away", "last matches away", "away form", "overall - away"}:
+        return "away_form"
+    return None
+
+
+def _clean(value: str) -> str:
+    value = re.sub(r"\s+", " ", value).strip()
+    value = re.sub(r"(?i)\b(?:W|D|L|FT|AET|PEN)\s*$", "", value).strip()
+    return value.strip(" |·•")
 
 
 def _parse_record(line: str, section: str) -> dict[str, Any] | None:
@@ -47,72 +52,67 @@ def _parse_record(line: str, section: str) -> dict[str, Any] | None:
         match_date = datetime(year, month, day).date().isoformat()
     except ValueError:
         return None
-    prefix = line[:date_match.start()].strip(" |·")
-    middle = line[date_match.end():score_match.start()].strip(" |·")
-    suffix = line[score_match.end():].strip(" |·")
-    # Supported clipboard row shapes:
-    # date | competition | home | score | away
-    # date competition | home - away | score
-    # date | competition | home - away | score
+
     parts = [part.strip() for part in line.split("|") if part.strip()]
     competition = ""
     home = away = ""
     if len(parts) >= 5:
+        # date | competition | home | score | away
+        competition, home, away = parts[1], parts[2], parts[4]
+    elif len(parts) == 4:
+        # date | competition | home - away | score
         competition = parts[1]
-        home = parts[2]
-        away = parts[4].split()[0] if parts[4].split() else ""
-    elif len(parts) >= 4:
-        competition = parts[1]
-        teams = parts[2]
-        split = re.split(r"\\s+[-–]\\s+", teams, maxsplit=1)
-        if len(split) == 2:
-            home, away = split
+        teams = re.split(r"\s+[-–]\s+", parts[2], maxsplit=1)
+        if len(teams) == 2:
+            home, away = teams
         else:
-            home = teams
-            away = parts[3]
-    else:
-        # Inline text is accepted only when the teams are explicitly separated by " - ".
-        team_text = middle
-        split = re.split(r"\\s+[-–]\\s+", team_text, maxsplit=1)
-        if len(split) == 2:
-            home, away = split
-            competition = prefix
-        else:
-            # "date competition home score away" is ambiguous; do not guess team boundaries.
             return None
-    home = _clean_line(home)
-    away = _clean_line(away)
-    competition = _clean_line(competition) or "Unknown competition"
-    if not home or not away or home.lower() == away.lower():
+    else:
+        # date competition | home - away | score (or date | competition | home - away | score)
+        middle = line[date_match.end():score_match.start()].strip(" |·")
+        teams = re.split(r"\s+[-–]\s+", middle, maxsplit=1)
+        if len(teams) != 2:
+            return None
+        home, away = teams
+        competition = line[:date_match.start()].strip(" |·")
+
+    home, away, competition = _clean(home), _clean(away), _clean(competition)
+    if not home or not away or home.casefold() == away.casefold():
         return None
-    hs, aws = map(int, score_match.groups())
-    if hs > 30 or aws > 30:
+    home_score, away_score = map(int, score_match.groups())
+    if home_score > 30 or away_score > 30:
         return None
     return {
         "date": match_date,
-        "competition": competition,
+        "competition": competition or "Unknown competition",
         "home_team": home,
         "away_team": away,
-        "home_score": hs,
-        "away_score": aws,
+        "home_score": home_score,
+        "away_score": away_score,
         "section": section,
         "venue_context": "home" if section == "home_form" else "away" if section == "away_form" else "head_to_head",
-        "result": "W" if hs > aws else "D" if hs == aws else "L",
+        "result": "W" if home_score > away_score else "D" if home_score == away_score else "L",
         "raw_line": line.strip(),
     }
 
 
-def parse_match_history_paste(text: str, *, source_name: str = "manual-paste", home_team: str = "", away_team: str = "") -> dict[str, Any]:
-    """Parse manually copied match-history sections. No network access or website scraping."""
+def parse_match_history_paste(
+    text: str, *, source_name: str = "manual-paste", home_team: str = "", away_team: str = ""
+) -> dict[str, Any]:
+    """Parse manually copied match-history text; never accesses a website."""
     if not isinstance(text, str) or not text.strip():
         raise ValueError("Paste the copied match page text first.")
     if len(text) > MAX_PASTE_CHARS:
         raise ValueError(f"Paste is too large. Limit: {MAX_PASTE_CHARS:,} characters.")
-    sections: dict[str, list[dict[str, Any]]] = {key: [] for key in SECTION_ALIASES}
+
+    sections: dict[str, list[dict[str, Any]]] = {
+        "home_form": [], "away_form": [], "h2h": []
+    }
+    seen: dict[str, set[tuple[Any, ...]]] = {key: set() for key in sections}
     errors: list[str] = []
     current: str | None = None
     ignored_noise = 0
-    seen: dict[str, set[tuple[str, str, str, int, int]]] = {key: set() for key in sections}
+
     for raw in text.splitlines():
         line = raw.strip()
         if not line:
@@ -129,37 +129,40 @@ def parse_match_history_paste(text: str, *, source_name: str = "manual-paste", h
         record = _parse_record(line, current)
         if not record:
             continue
-        identity = (record["date"], record["home_team"].casefold(), record["away_team"].casefold(),
-                    record["home_score"], record["away_score"])
+        identity = (
+            record["date"], record["home_team"].casefold(), record["away_team"].casefold(),
+            record["home_score"], record["away_score"],
+        )
         if identity in seen[current]:
             continue
         seen[current].add(identity)
-        sections[current].append(record)
-        if len(sections[current]) > MAX_MATCHES_PER_SECTION:
-            sections[current] = sections[current][:MAX_MATCHES_PER_SECTION]
+        if len(sections[current]) == MAX_MATCHES_PER_SECTION:
             errors.append(f"{current}: more than 35 records were present; only the first 35 were retained.")
-            break
+            continue
+        sections[current].append(record)
+
     coverage = {}
     for key, records in sections.items():
         count = len(records)
         coverage[key] = {
             "records_found": count,
             "target": MAX_MATCHES_PER_SECTION,
-            "complete_to_target": count >= MAX_MATCHES_PER_SECTION,
-            "status": "complete" if count >= MAX_MATCHES_PER_SECTION else "incomplete_or_not_supplied",
+            "complete_to_target": count == MAX_MATCHES_PER_SECTION,
+            "status": "complete" if count == MAX_MATCHES_PER_SECTION else "incomplete_or_not_supplied",
         }
         if count == 0:
-            errors.append(f"{key}: no records recognised. The section may be missing or its clipboard layout is not supported.")
-    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+            errors.append(f"{key}: no records recognised. The section may be missing or its clipboard layout is unsupported.")
+
     return {
         "source_name": source_name,
         "source_type": "manual_clipboard_text",
-        "source_sha256": digest,
+        "source_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
         "sections": sections,
         "coverage": coverage,
-        "total_records": sum(map(len, sections.values())),
+        "total_records": sum(len(records) for records in sections.values()),
         "ignored_noise_lines": ignored_noise,
         "errors": errors,
-        "status": "success" if all(sections.values()) and not errors else "partial" if any(sections.values()) else "failed",
+        "status": "success" if all(coverage[key]["complete_to_target"] for key in sections) and not errors
+                  else "partial" if any(sections.values()) else "failed",
         "excluded_fields": ["odds", "bookmaker_names", "betting_links", "advertisements"],
     }

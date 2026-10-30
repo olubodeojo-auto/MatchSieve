@@ -329,3 +329,18 @@ code { background: #eef2e8; border-radius: 4px; padding: 2px 4px; font-family: u
 }
 .operator-card select { width: 100%; min-width: 0; border: 1px solid #d7e0d4; border-radius: 7px; background: #fff; padding: 10px; color: var(--ink); font-size: 11px; }
 .subheading { margin: 21px 0 11px; padding-top: 14px; border-top: 1px solid #e0e7da; }
+
+/* Manual match-history paste intake */
+.paste-import-card { grid-column: 1 / -1; }
+.paste-import-card textarea {
+  width: 100%; min-height: 220px; resize: vertical; padding: 12px;
+  border: 1px solid var(--line-dark); border-radius: 8px; background: #fff;
+  color: var(--ink); font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+.paste-import-card textarea:focus { outline: 2px solid #91ad76; border-color: #91ad76; }
+.paste-import-result {
+  margin-top: 12px; padding: 12px; border-radius: 8px; background: #f3f7ec;
+  border: 1px solid #dce7d3; color: #344637; white-space: pre-wrap;
+  overflow-wrap: anywhere; font-size: 11px; line-height: 1.65;
+}
+@media (max-width: 700px) { .paste-import-card { grid-column: auto; } }

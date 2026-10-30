@@ -83,6 +83,46 @@ class MatchHistoryPasteTests(unittest.TestCase):
         self.assertEqual(result["sections"]["home_form"][0]["competition"], "Unknown competition")
         self.assertTrue(any("competition is not present" in warning for warning in result["errors"]))
 
+    def test_multiline_clipboard_rows_are_supported(self):
+        text = "\n".join([
+            "Last matches: Le Havre - Home",
+            "25.10.2026",
+            "L1",
+            "Marseille",
+            "Marseille",
+            "Le Havre",
+            "Le Havre",
+            "4",
+            "3",
+            "W",
+            "Last matches: PSG - Away",
+            "17.10.2026",
+            "L1",
+            "Strasbourg",
+            "Strasbourg",
+            "PSG",
+            "PSG",
+            "1",
+            "3",
+            "L",
+            "Head-to-head matches",
+            "28.02.2026",
+            "L1",
+            "Le Havre",
+            "Le Havre",
+            "PSG",
+            "PSG",
+            "0",
+            "1",
+            "L",
+        ])
+        result = parse_match_history_paste(text, home_team="Le Havre", away_team="PSG")
+        self.assertEqual(result["sections"]["home_form"][0]["home_team"], "Marseille")
+        self.assertEqual(result["sections"]["home_form"][0]["competition"], "L1")
+        self.assertEqual((result["sections"]["home_form"][0]["home_score"], result["sections"]["home_form"][0]["away_score"]), (4, 3))
+        self.assertEqual(result["sections"]["away_form"][0]["away_team"], "PSG")
+        self.assertEqual(result["sections"]["h2h"][0]["home_team"], "Le Havre")
+
     def test_invalid_date_is_not_silently_accepted(self):
         result = parse_match_history_paste(
             "Last matches: Le Havre - Home\n31.02.2026 | League | Home FC - Away FC | 1-0",

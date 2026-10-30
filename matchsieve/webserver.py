@@ -54,6 +54,7 @@ def mobile_report_from_evidence(report_id: int, evidence: dict[str, Any], markdo
         "missing_data": list(evidence.get("missing_information", [])),
         "source_records": list(evidence.get("sources", [])),
         "h2h": list(evidence.get("h2h", [])),
+        "history_coverage": evidence.get("history_coverage", {}),
         "home_form": evidence.get("home_form", {}),
         "away_form": evidence.get("away_form", {}),
         "generated_at_utc": evidence.get("generated_at"),

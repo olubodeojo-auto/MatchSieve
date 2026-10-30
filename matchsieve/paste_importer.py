@@ -17,12 +17,16 @@ SCORE_RE = re.compile(r"(?<!\\d)(\\d{1,2})\\s*[-:–]\\s*(\\d{1,2})(?!\\d)")
 NOISE_RE = re.compile(r"(?i)\\b(?:odds?|bet9ja|1xbet|betking|advertisement|sponsored|casino|bonus)\\b")
 
 
-def _section_for(line: str) -> str | None:
+def _section_for(line: str, home_team: str = "", away_team: str = "") -> str | None:
     value = re.sub(r"\\s+", " ", line.strip().lower())
     for section, aliases in SECTION_ALIASES.items():
         if any(alias in value for alias in aliases):
             return section
     return None
+
+
+def normalise_label(value: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", value.lower())
 
 
 def _clean_line(line: str) -> str:
@@ -98,7 +102,7 @@ def _parse_record(line: str, section: str) -> dict[str, Any] | None:
     }
 
 
-def parse_match_history_paste(text: str, *, source_name: str = "manual-paste") -> dict[str, Any]:
+def parse_match_history_paste(text: str, *, source_name: str = "manual-paste", home_team: str = "", away_team: str = "") -> dict[str, Any]:
     """Parse manually copied match-history sections. No network access or website scraping."""
     if not isinstance(text, str) or not text.strip():
         raise ValueError("Paste the copied match page text first.")
@@ -113,7 +117,7 @@ def parse_match_history_paste(text: str, *, source_name: str = "manual-paste") -
         line = raw.strip()
         if not line:
             continue
-        detected = _section_for(line)
+        detected = _section_for(line, home_team, away_team)
         if detected:
             current = detected
             continue

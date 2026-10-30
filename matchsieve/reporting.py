@@ -21,18 +21,18 @@ def fmt_sample(team: dict[str,Any]) -> str:
 
 
 def report_to_markdown(e: dict[str,Any], narrative: str | None=None) -> str:
-    f=e['fixture']; mk=e['market']; lines=[f"# {f['home_team']} vs {f['away_team']}","",
+    f=e['fixture']; mk=e['market']
+    lines=[f"# {f['home_team']} vs {f['away_team']}","",
         f"**Competition:** {f['competition']}  ",f"**Kickoff (stored UTC):** {f['kickoff_utc']}  ",f"**Market requested:** {mk['label']}  ",
-        f"**Research status:** `{e['status']}`  ",f"**Generated:** {e['generated_at']}  ","**Publication status:** Draft — not published", "",
+        f"**Research status:** \`{e['status']}\`  ",f"**Generated:** {e['generated_at']}  ","**Publication status:** Draft — not published", "",
         "> This is an evidence-led research summary, not a guaranteed outcome or instruction to place a bet. All figures reflect records stored in the local archive at generation time.","",
-        "## The market question",mk['question'],"", "## Evidence from recent completed matches",fmt_sample(e['home_form']),"",fmt_sample(e['away_form']),"",
+        "## The market question",mk['question'],"", "## Evidence from recent completed matches",fmt_sample(e['home_form']),"",fmt_sample(e['away_form']),""]
     if e.get("history_coverage"):
         lines += ["## Pasted history coverage"]
         for key, label in (("home_form", "Home-team form"), ("away_form", "Away-team form"), ("h2h", "Head-to-head")):
             coverage = e["history_coverage"].get(key, {})
             lines.append(f"- {label}: {coverage.get('records_found', 0)}/35 records captured; {coverage.get('status', 'unknown')}.")
-    lines += [""]
-        "## Signals that may support this market"]
+    lines += ["", "## Signals that may support this market"]
     lines += [f"- {x}" for x in (e['supporting_signals'] or ["No supporting historical indicators are available."])]
     lines += ["", "## Signals against it / reasons for caution"]
     lines += [f"- {x}" for x in (e['counter_signals'] or ["No opposing signal could be computed from stored records."])]
@@ -47,9 +47,7 @@ def report_to_markdown(e: dict[str,Any], narrative: str | None=None) -> str:
     lines += ["", "## Source record"]
     if e['sources']:
         for s in e['sources']:
-            lines.append(f"- Source: `{s.get('source_key')}` | Captured: {s.get('captured_at')} | Reference: {s.get('source_ref') or 'not supplied'} | URL: {s.get('source_url') or 'not supplied'} | Quality: {s.get('quality_label')}")
-            # SportScore's public API specifies an attribution link; make the requirement visible
-            # in export formats as well as the browser source-provenance card.
+            lines.append(f"- Source: \`{s.get('source_key')}\` | Captured: {s.get('captured_at')} | Reference: {s.get('source_ref') or 'not supplied'} | URL: {s.get('source_url') or 'not supplied'} | Quality: {s.get('quality_label')}")
             if str(s.get('source_key') or '').lower() == 'sportscore':
                 lines.append('  - Attribution: Powered by SportScore — https://sportscore.com/')
     else: lines.append("- No source snapshot attached.")
